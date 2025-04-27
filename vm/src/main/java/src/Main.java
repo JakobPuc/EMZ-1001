@@ -10,13 +10,15 @@ import java.util.List;
 
 public class Main {
 
-    public static final String srcFile = "asm/src/main/resources/out.bin";
+    public static final String srcFile = "vm/src/main/resources/out.bin";
 
     // ! not final may change
     private static final int sizeOfRom = 1024; // size of ROM
     private static int[] ROM = new int[sizeOfRom]; // size of ROM
 
     public static int programCounter; // program counter
+
+    private static final int procesorFreq = 900000;
 
     // pins that means all of them inc. VCC and GND
     // 8D lines
@@ -60,10 +62,10 @@ public class Main {
             e.printStackTrace();
         }
         // Start a simulation
-        simulation();
+        simulation(InstructionArray);
         //
-        dumpROM();
-        dumpRAM();
+        // dumpROM();
+        // dumpRAM();
     }
 
     private static List<Instruction> getInstructionArray() {
@@ -111,14 +113,55 @@ public class Main {
         System.out.println("Dump of RAM");
         for (int i = 0; i < Main.RAM.length; i++) {
             for (int j = 0; j < Main.RAM[i].length; j++) {
-                System.out.print(String.format("%4s", Integer.toBinaryString(Main.RAM[i][j])).replace(' ', '0')+ " ");
+                System.out.print(String.format("%4s", Integer.toBinaryString(Main.RAM[i][j])).replace(' ', '0') + " ");
             }
             System.out.println();
         }
     }
 
-    private static void simulation() {
+    private static void simulation(List<Instruction> listOfinstructions) {
+        SignalSimulator secondsFlagSetter = new SignalSimulator();
+        SignalSimulator clockGenerator = new SignalSimulator();
+        try {
+            clockGenerator.setSignalFreqency(procesorFreq);
+        } catch (NegativeFrequencyException e) {
+            e.printStackTrace();
+        }
+        secondsFlagSetter.start();
+        clockGenerator.start();
+        int instruction = 0;
+        while (true) {
+            if (clockGenerator.getFlag()) {
+                clockGenerator.setFlag(false);
+                instruction = Main.ROM[Main.programCounter];
+                Main.programCounter++;
+                if (Main.programCounter >= Main.sizeOfRom) {
+                    break;
+                }
+                int indexOfOnstruction = returnIndexOfInstruction(instruction, listOfinstructions);
+                if(indexOfOnstruction == -1){
+                    System.out.println("Instruction does not exist");
+                    break;
+                }
+                System.out.println(indexOfOnstruction);
+                // instruction = instruction & 0xFF;
+                // System.out.println(instruction);
 
+            }
+        }
+        clockGenerator.kill();
+        secondsFlagSetter.kill();
+    }
+
+    private static int returnIndexOfInstruction(int instruction, List<Instruction> listOFInstructions) {
+        int i = 0;
+        for (; i < listOFInstructions.size(); i++) {
+            Instruction ins = listOFInstructions.get(i);
+            if(ins.getOpCode() == (instruction & (~ins.getMask()))){
+                return i;
+            }
+        }
+        return -1;
     }
 }
 
