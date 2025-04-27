@@ -1,0 +1,3 @@
+[submodule "emzasm"]
+	path = emzasm
+	url = https://github.com/Ama-dej/emzasm.git
