@@ -5,6 +5,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,6 +50,11 @@ public class Main {
         // System.out.println(System.currentTimeMillis());
         File file = null;
         List<Instruction> InstructionArray = getInstructionArray();
+        Instruction[] instructionArray = new Instruction[InstructionArray.size()];
+        for (int i = 0; i < InstructionArray.size(); i++) {
+            instructionArray[i] = InstructionArray.get(i);
+        }
+
         // ! IDK if it works
         if (args != null && args.length > 0) {
             file = new File(args[0].strip());
@@ -62,7 +68,7 @@ public class Main {
             e.printStackTrace();
         }
         // Start a simulation
-        simulation(InstructionArray);
+        simulation(instructionArray);
         //
         // dumpROM();
         // dumpRAM();
@@ -119,7 +125,7 @@ public class Main {
         }
     }
 
-    private static void simulation(List<Instruction> listOfinstructions) {
+    private static void simulation(Instruction[] ArraayOfInstructions) {
         SignalSimulator secondsFlagSetter = new SignalSimulator();
         SignalSimulator clockGenerator = new SignalSimulator();
         try {
@@ -138,14 +144,18 @@ public class Main {
                 if (Main.programCounter >= Main.sizeOfRom) {
                     break;
                 }
-                int indexOfOnstruction = returnIndexOfInstruction(instruction, listOfinstructions);
-                if(indexOfOnstruction == -1){
+                int indexOfOnstruction = returnIndexOfInstruction(instruction, ArraayOfInstructions);
+                if (indexOfOnstruction == -1) {
                     System.out.println("Instruction does not exist");
                     break;
                 }
-                System.out.println(indexOfOnstruction);
-                // instruction = instruction & 0xFF;
-                // System.out.println(instruction);
+                if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
+                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0);
+                } else {
+                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
+                            instruction & ArraayOfInstructions[indexOfOnstruction].getMask());
+                }
+                executeInstruction(1, 1);
 
             }
         }
@@ -153,11 +163,23 @@ public class Main {
         secondsFlagSetter.kill();
     }
 
-    private static int returnIndexOfInstruction(int instruction, List<Instruction> listOFInstructions) {
+    private static void executeInstruction(int opCode, int param) {
+        switch (opCode) {
+            case 0x00:
+            case 0x01:
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private static int returnIndexOfInstruction(int instruction, Instruction[] listOFInstructions) {
         int i = 0;
-        for (; i < listOFInstructions.size(); i++) {
-            Instruction ins = listOFInstructions.get(i);
-            if(ins.getOpCode() == (instruction & (~ins.getMask()))){
+        for (; i < listOFInstructions.length; i++) {
+            Instruction ins = listOFInstructions[i];
+            if (ins.getOpCode() == (instruction & (~ins.getMask()))) {
                 return i;
             }
         }
