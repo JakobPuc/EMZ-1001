@@ -41,7 +41,7 @@ public class Main {
     private static byte[][] RAM = new byte[4][16]; // uses bytes but is 4 bit
 
     // stack
-    private static final int sizeOfStack = 4; // depth of stack
+    private static final int sizeOfStack = 3; // depth of stack
     private static int[] stack = new int[sizeOfStack]; // stack
     private static byte stackPointer = 0; // if stack pointer == 0 that means that you arent in a subroutine
 
@@ -150,12 +150,13 @@ public class Main {
                     break;
                 }
                 if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
-                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0);
+                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0, clockGenerator,
+                            secondsFlagSetter);
                 } else {
                     executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
-                            instruction & ArraayOfInstructions[indexOfOnstruction].getMask());
+                            instruction & ArraayOfInstructions[indexOfOnstruction].getMask(), clockGenerator,
+                            secondsFlagSetter);
                 }
-                executeInstruction(1, 1);
 
             }
         }
@@ -163,16 +164,87 @@ public class Main {
         secondsFlagSetter.kill();
     }
 
-    private static void executeInstruction(int opCode, int param) {
+    private static void executeInstruction(int opCode, int param, SignalSimulator clock, SignalSimulator secondfFlag) {
         switch (opCode) {
-            case 0x00:
-            case 0x01:
-
+            case 0x00: // NOP
+            case 0x01: // BRK trated as NOP
                 break;
-
+            case 0x02: // RT
+                Main.stackPointer--;
+                if (Main.stackPointer < 0) {
+                    Main.stackPointer = Main.sizeOfStack - 1;
+                }
+                Main.programCounter = Main.stack[stackPointer];
+                break;
+            case 0x03: // RTS
+                Main.stackPointer--;
+                if (Main.stackPointer < 0) {
+                    Main.stackPointer = Main.sizeOfStack - 1;
+                }
+                Main.programCounter = Main.stack[stackPointer];
+                skip();
+                break;
+            case 0x04: // PSH
+                break;
+            case 0x05: // PSL
+                break;
+            case 0x06: // AND
+                accummulator = (byte) (accummulator & (RAM[BU][BL]) & 0x0F);
+                break;
+            case 0x07:
+                if (secondfFlag.getFlag() == true) {
+                    secondfFlag.setFlag(false);
+                    skip();
+                }
+                break;
+            case 0x08: // SBE
+                if (BL == accummulator) {
+                    skip();
+                }
+                break;
+            case 0x09: // SZC
+                if (carryFlag == false) {
+                    skip();
+                }
+                break;
+            case 0x0A: // STC
+                carryFlag = true;
+                break;
+            case 0x0B: // RSC
+                carryFlag = false;
+                break;
+            case 0x0C: // LAE
+                accummulator = E;
+                break;
+            case 0x0D:// XAE
+                byte tmp = E;
+                E = accummulator;
+                accummulator = tmp;
+                break;
+            case 0x0E: // INP
+                break;
+            case 0x0F:
+                if((accummulator & 0x1) == 1){
+                    //Do somthing IO
+                }else {
+                    //Do somthing else IO
+                }
+                if(((accummulator >> 2) & 0x1) == 1){
+                    secondfFlag.setSignalFreqency(true);
+                }else{
+                    secondfFlag.setSignalFreqency(false);
+                }
+            break;
             default:
-                break;
+                return;
         }
+    }
+
+    private static void skip() {
+        while ((Main.ROM[programCounter] & 0b11110000) == 0x60) {
+            programCounter++;
+        }
+        programCounter++;
     }
 
     private static int returnIndexOfInstruction(int instruction, Instruction[] listOFInstructions) {

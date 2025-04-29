@@ -31,13 +31,13 @@ public class SignalSimulator extends Thread implements Runnable {
     }
 
     public void setSignalFreqency(boolean europian) {
-        if (!europian) {
+        if (europian) {
             this.freqrency = 60;
             this.sleep = 1000 / this.freqrency;
             this.milis = (long) (sleep);
             this.nanos = (int) ((sleep - milis) * 1000000);
         } else {
-            this.freqrency = 60;
+            this.freqrency = 50;
             this.sleep = 1000 / this.freqrency;
             this.milis = (long) (sleep);
             this.nanos = (int) ((sleep - milis) * 1000000);
