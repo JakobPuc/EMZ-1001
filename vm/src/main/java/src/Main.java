@@ -36,6 +36,10 @@ public class Main {
     // flags
     private static boolean secondsFlag;
     private static boolean carryFlag;
+    private static boolean flagOne;
+    private static boolean flagTwo;
+
+    private static boolean previouPP = false;
 
     // ram
     private static byte[][] RAM = new byte[4][16]; // uses bytes but is 4 bit
@@ -165,6 +169,7 @@ public class Main {
     }
 
     private static void executeInstruction(int opCode, int param, SignalSimulator clock, SignalSimulator secondfFlag) {
+        byte tmp = 0;
         switch (opCode) {
             case 0x00: // NOP
             case 0x01: // BRK trated as NOP
@@ -217,25 +222,248 @@ public class Main {
                 accummulator = E;
                 break;
             case 0x0D:// XAE
-                byte tmp = E;
+                tmp = E;
                 E = accummulator;
                 accummulator = tmp;
                 break;
             case 0x0E: // INP
                 break;
             case 0x0F:
-                if((accummulator & 0x1) == 1){
-                    //Do somthing IO
-                }else {
-                    //Do somthing else IO
+                if ((accummulator & 0x1) == 1) {
+                    // Do somthing IO
+                } else {
+                    // Do somthing else IO
                 }
-                if(((accummulator >> 2) & 0x1) == 1){
+                if (((accummulator >> 2) & 0x1) == 1) {
                     secondfFlag.setSignalFreqency(true);
-                }else{
+                } else {
                     secondfFlag.setSignalFreqency(false);
                 }
+                break;
+            case 0x10: // CMA
+                Main.accummulator = (byte) ~Main.accummulator;
+                break;
+            case 0x11: // XABU
+                tmp = (byte) (Main.BU & 0x3);
+                Main.BU = (byte) (accummulator & 0x03);
+                Main.accummulator = (byte) ((Main.accummulator & 0b00000011) | tmp);
+                break;
+            case 0x12: // LAB
+                Main.accummulator = Main.BL;
+                break;
+            case 0x13: // XAB
+                tmp = Main.BL;
+                Main.BL = Main.accummulator;
+                Main.accummulator = tmp;
+                break;
+            case 0x14: // ADCS
+                if (Main.carryFlag == true) {
+                    tmp = Main.RAM[Main.BU][Main.BL];
+                }
+                tmp++;
+                Main.accummulator = (byte) (Main.accummulator + tmp);
+                if (Main.accummulator >= 15) {
+                    skip();
+                    carryFlag = true;
+                } else {
+                    carryFlag = false;
+                }
+                break;
+            case 0x15: // XOR
+                Main.accummulator = (byte) (Main.accummulator ^ Main.RAM[Main.BU][Main.BL]);
+                break;
+            case 0x16: // ADD
+                Main.accummulator = (byte) (Main.RAM[Main.BU][Main.BL] + Main.accummulator);
+                break;
+            case 0x17: // SAM
+                if (Main.accummulator == Main.RAM[Main.BU][Main.BL]) {
+                    skip();
+                }
+                break;
+            case 0x18: // DISB
+                break;
+            case 0x19: // MVS
+                break;
+            case 0x1A: // OUT
+                break;
+            case 0x1B: // DISN
+                break;
+            case 0x1C: // SZM B
+                tmp = Main.RAM[Main.BU][Main.BL];
+                if ((0 <= param) && (param <= 3)) {
+                    tmp = (byte) (tmp >> param);
+                    tmp = (byte) (tmp & 0x01);
+                    if (tmp == 0x01) {
+                        skip();
+                    }
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x20: // STM B
+                tmp = 0x01;// Main.RAM[Main.BU][Main.BL];
+                if ((0 <= param) && (param <= 3)) {
+                    param = param - 1;
+                    tmp = (byte) (tmp << param);
+                    Main.RAM[Main.BU][Main.BL] = (byte) (Main.RAM[Main.BU][Main.BL] | tmp);
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x24: // RSM B
+                tmp = 0x01;// Main.RAM[Main.BU][Main.BL];
+                if ((0 <= param) && (param <= 3)) {
+                    param = param - 1;
+                    tmp = (byte) (tmp << param);
+                    tmp = (byte) (~tmp);
+                    Main.RAM[Main.BU][Main.BL] = (byte) (Main.RAM[Main.BU][Main.BL] & tmp);
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x28: // SZK
+                break;
+            case 0x29: // SZI
+                break;
+            case 0x2A: // RF1
+                Main.flagOne = false;
+                break;
+            case 0x2B: // ST1
+                Main.flagOne = true;
+                break;
+            case 0x2C: // RF2
+                Main.flagTwo = false;
+                break;
+            case 0x2D: // ST2
+                Main.flagTwo = true;
+                break;
+            case 0x2E: // TF1
+                if (Main.flagOne == true) {
+                    skip();
+                }
+                break;
+            case 0x2F: // TF2
+                if (Main.flagTwo == true) {
+                    skip();
+                }
+                break;
+            case 0x30: // XCI Y*
+                tmp = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BU = (byte) (Main.BU + param);
+                    Main.BU = (byte) (Main.BU & 0x03);
+                    Main.BL++;
+                    Main.BL = (byte) (Main.BL & 0x0F);
+                    if (Main.BL == 0) {
+                        skip();
+                    }
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x34: // XCD Y*
+                tmp = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BU = (byte) (Main.BU + param);
+                    Main.BU = (byte) (Main.BU & 0x03);
+                    if (Main.BL >= 1) {
+                        Main.BL--;
+                    } else {
+                        Main.BL = 15;
+                    }
+                    if (Main.BL == 15) {
+                        skip();
+                    }
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x38:
+                tmp = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                Main.BU++;
+                Main.BU = (byte) (Main.BU & 0x03);
+                break;
+            case 0x3C: // LAM Y*
+                Main.accummulator = Main.RAM[Main.BU][Main.BL];
+                Main.BU++;
+                Main.BU = (byte) (Main.BU & 0x03);
+                break;
+            case 0x40: // LBZ Y
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BL = 0x00;
+                    Main.BU = (byte) param;
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x44: // LBF Y
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BL = 0x0F;
+                    Main.BU = (byte) param;
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x48: // LBE Y
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BL = Main.E;
+                    Main.BU = (byte) param;
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x4C: // LBEP Y
+                if ((0 <= param) && (param <= 3)) {
+                    Main.BL = (byte) ((Main.E + 1) & 0x0F);
+                    Main.BU = (byte) param;
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x50: // ADIS X
+                if ((0 <= param) && (param <= 15)) {
+                    Main.accummulator = (byte) (Main.accummulator + param);
+                    if (Main.accummulator <= 15) {
+                        skip();
+                    }
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+            case 0x60: // PP X*
+                if (Main.previouPP == false) {
+                    Main.previouPP = true;
+                    if ((0 <= param) && (param <= 15)) {
+                        Main.BL = (byte) param;
+                    } else {
+                        System.out.println("Index out of bounts");
+                    }
+                } else {
+                    Main.previouPP = false;
+                    if ((0 <= param) && (param <= 3)) {
+                        Main.BU = (byte) param;
+                    } else {
+                        System.out.println("Index out of bounts");
+                    }
+                }
+                break;
+            case 0x70: // LAI X //! no IO
+                if ((0 <= param) && (param <= 15)) {
+                    Main.accummulator = (byte) param;
+                } else {
+                    System.out.println("Index out of bounts");
+                }
+                break;
+
+            case 0x80: // JMS X
+                break;
+            case 0xC0: // JMP X
             break;
             default:
+                System.out.println("Illigal instruction");
                 return;
         }
     }
