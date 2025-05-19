@@ -25,13 +25,16 @@ public class Main {
     // 8D lines
     //
     //
-    private static int[] StateOfPins = new int[40];
+    // private static int[] StateOfPins = new int[40];
 
     // registers
     private static byte accummulator; // accumulator
     private static byte BL;
     private static byte BU;
     private static byte E;
+    // need to include for RT,JMP JMS
+    private static int PPR;
+    private static int PBR;
 
     // flags
     private static boolean secondsFlag;
@@ -44,7 +47,7 @@ public class Main {
     // ram
     private static byte[][] RAM = new byte[4][16]; // uses bytes but is 4 bit
 
-    // stack
+    // stack //! to change
     private static final int sizeOfStack = 3; // depth of stack
     private static int[] stack = new int[sizeOfStack]; // stack
     private static byte stackPointer = 0; // if stack pointer == 0 that means that you arent in a subroutine
@@ -461,11 +464,12 @@ public class Main {
             case 0x80: // JMS X
                 break;
             case 0xC0: // JMP X
-            break;
+                break;
             default:
                 System.out.println("Illigal instruction");
                 return;
         }
+
     }
 
     private static void skip() {
