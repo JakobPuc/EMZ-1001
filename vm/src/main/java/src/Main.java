@@ -18,6 +18,10 @@ public class Main {
     private static int[] ROM = new int[sizeOfRom]; // size of ROM
 
     public static int programCounter; // program counter
+    // need to include for RT,JMP JMS
+    private static int PPR; // prepare page reg
+    private static int PBR; // prepare bank reg
+    // program counterocation reg
 
     private static final int procesorFreq = 900000;
 
@@ -32,9 +36,6 @@ public class Main {
     private static byte BL;
     private static byte BU;
     private static byte E;
-    // need to include for RT,JMP JMS
-    private static int PPR;
-    private static int PBR;
 
     // flags
     private static boolean secondsFlag;
@@ -42,7 +43,8 @@ public class Main {
     private static boolean flagOne;
     private static boolean flagTwo;
 
-    private static boolean previouPP = false;
+    private static boolean flagPP = false;
+    private static boolean previousFlagPP = false;
 
     // ram
     private static byte[][] RAM = new byte[4][16]; // uses bytes but is 4 bit
@@ -53,8 +55,6 @@ public class Main {
     private static byte stackPointer = 0; // if stack pointer == 0 that means that you arent in a subroutine
 
     public static void main(String[] args) {
-        // Read a file from method call or use default file
-        // System.out.println(System.currentTimeMillis());
         File file = null;
         List<Instruction> InstructionArray = getInstructionArray();
         Instruction[] instructionArray = new Instruction[InstructionArray.size()];
@@ -77,7 +77,7 @@ public class Main {
         // Start a simulation
         simulation(instructionArray);
         //
-        // dumpROM();
+        dumpROM();
         dumpRAM();
     }
 
@@ -116,9 +116,10 @@ public class Main {
     public static void dumpROM() {
         System.out.println("Dump of ROM");
         for (int i = 0; i < Main.ROM.length; i++) {
-            System.out.println(
-                    String.format("0x%04X", i) + " : "
-                            + String.format("%8s", Integer.toBinaryString(Main.ROM[i])).replace(' ', '0'));
+            if (Main.ROM[i] != 0)
+                System.out.println(
+                        String.format("0x%04X", i) + " : "
+                                + String.format("%8s", Integer.toBinaryString(Main.ROM[i])).replace(' ', '0'));
         }
     }
 
@@ -126,7 +127,8 @@ public class Main {
         System.out.println("Dump of RAM");
         for (int i = 0; i < Main.RAM.length; i++) {
             for (int j = 0; j < Main.RAM[i].length; j++) {
-                System.out.print(String.format("%4s", Integer.toBinaryString(Main.RAM[i][j])).replace(' ', '0') + " ");
+                System.out.print(
+                        String.format("%4s", Integer.toBinaryString(Main.RAM[i][j])).replace(' ', '0') + " ");
             }
             System.out.println();
         }
@@ -144,6 +146,7 @@ public class Main {
         clockGenerator.start();
         int instruction = 0;
         while (true) {
+            // dumpRAM();
             if (clockGenerator.getFlag()) {
                 clockGenerator.setFlag(false);
                 instruction = Main.ROM[Main.programCounter];
@@ -172,25 +175,290 @@ public class Main {
     }
 
     private static void executeInstruction(int opCode, int param, SignalSimulator clock, SignalSimulator secondfFlag) {
-        byte tmp = 0;
+        Main.previousFlagPP = Main.flagPP;
+        Main.flagPP = false;
+        int tmpInt = 0;
+        byte tmpByte = 0;
         switch (opCode) {
             case 0x00: // NOP
                 break;
             case 0x01: // BRK trated as NOP
                 break;
+            case 0x02: // RT
+                Main.stackPointer--;
+                if (Main.stackPointer < 0) {
+                    Main.stackPointer = Main.sizeOfStack - 1;
+                }
+                tmpInt = programCounter & 0b1110000000000;
+                tmpInt = tmpInt | (Main.stack[Main.stackPointer] & 0b1111111111);
+                programCounter = tmpInt;
+                break;
+            case 0x03: // RTS
+                Main.stackPointer--;
+                if (Main.stackPointer < 0) {
+                    Main.stackPointer = Main.sizeOfStack - 1;
+                }
+                tmpInt = programCounter & 0b1110000000000;
+                tmpInt = tmpInt | (Main.stack[Main.stackPointer] & 0b1111111111);
+                programCounter = tmpInt;
+                skip();
+                break;
+            case 0x04: // PSH
+                break;
+            case 0x05: // PSL
+                break;
+            case 0x06: // AND
+                accummulator = (byte) (accummulator & (RAM[BU][BL]) & 0x0F);
+                break;
+            case 0x07: // SOS
+                if (Main.secondsFlag == true) {
+                    Main.secondsFlag = false;
+                    skip();
+                }
+                break;
+            case 0x08: // SBE
+                if (Main.E == Main.BL) {
+                    skip();
+                }
+                break;
+            case 0x09: // SZC
+                if (Main.carryFlag == false) {
+                    skip();
+                }
+                break;
+            case 0x0A: // STC
+                Main.carryFlag = true;
+                break;
+            case 0x0B:
+                Main.carryFlag = false;
+                break;
+            case 0x0C: // LAE
+                Main.accummulator = Main.E;
+                break;
+            case 0x0D: // XAE
+                tmpByte = Main.accummulator;
+                Main.accummulator = Main.E;
+                Main.E = tmpByte;
+                break;
+            case 0x0E: // INP
+                break;
+            case 0x0F: // EUR
+                if ((accummulator & 0x1) == 1) {
+                    // Do somthing IO
+                } else {
+                    // Do somthing else IO
+                }
+                if (((accummulator >> 2) & 0x1) == 1) {
+                    secondfFlag.setSignalFreqency(true);
+                } else {
+                    secondfFlag.setSignalFreqency(false);
+                }
+                break;
+            case 0x10: // CMA
+                Main.accummulator = (byte) (15 - Main.accummulator);
+                break;
+            case 0x11: // XABU
+                tmpByte = Main.BU;
+                Main.BU = (byte) (Main.accummulator & 0b11);
+                Main.accummulator = (byte) (Main.accummulator & 0b11);
+                Main.accummulator = (byte) (Main.accummulator | tmpByte);
+                break;
+            case 0x12: // LAB
+                Main.accummulator = Main.BL;
+                break;
+            case 0x13: // XAB
+                tmpByte = Main.accummulator;
+                Main.accummulator = Main.BL;
+                Main.BL = tmpByte;
+                break;
+            case 0x14: // ADCS
+                if (Main.carryFlag == true) {
+                    Main.accummulator++;
+                }
+                Main.accummulator = (byte) (Main.accummulator + Main.RAM[BU][BL]);
+                if (Main.accummulator > 15) {
+                    Main.carryFlag = true;
+                } else {
+                    Main.carryFlag = false;
+                }
+                Main.accummulator = (byte) (Main.accummulator & 0b1111);
+                break;
+            case 0x15: // XOR
+                Main.accummulator = (byte) (Main.accummulator ^ Main.RAM[Main.BU][Main.BL]);
+                break;
+            case 0x16: // ADD
+                Main.accummulator = (byte) (Main.RAM[Main.BU][Main.BL] + Main.accummulator);
+                break;
+            case 0x17: // SAM
+                if (Main.accummulator == Main.RAM[Main.BU][Main.BL]) {
+                    skip();
+                }
+                break;
+            case 0x18: // DISB
+                break;
+            case 0x19: // MVS
+                break;
+            case 0x1A: // OUT
+                break;
+            case 0x1B: // DISN
+                break;
+            case 0x1C: // SZM B
+                tmpByte = Main.RAM[BU][BL];
+                tmpByte = (byte) (tmpByte >> param);
+                if ((tmpByte & 0b1) == 0) {
+                    skip();
+                }
+                break;
+            case 0x20: // STM B
+                tmpByte = 0b1;
+                tmpByte = (byte) (tmpByte << param);
+                Main.RAM[BU][BL] = (byte) (Main.RAM[BU][BL] | tmpByte);
+                break;
+            case 0x24: // RSM B
+                tmpByte = 0b1;
+                tmpByte = (byte) (tmpByte << param);
+                tmpByte = (byte) (~tmpByte & 0b01111111);
+                Main.RAM[BU][BL] = (byte) (Main.RAM[BU][BL] & tmpByte);
+                break;
+            case 0x28: // SZK
+                break;
+            case 0x29: // SZI
+                break;
+            case 0x2A: // RF1
+                Main.flagOne = false;
+                break;
+            case 0x2B: // ST1
+                Main.flagOne = true;
+                break;
+            case 0x2C: // RF2
+                Main.flagTwo = false;
+                break;
+            case 0x2D: // ST2
+                Main.flagTwo = true;
+                break;
+            case 0x2E: // TF1
+                if (Main.flagOne == true) {
+                    skip();
+                }
+                break;
+            case 0x2F: // TF2
+                if (Main.flagTwo == true) {
+                    skip();
+                }
+                break;
+            case 0x30: // XCI Y*
+                tmpByte = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                Main.accummulator = tmpByte;
+                Main.BU = (byte) (Main.BU ^ ~param);
+                Main.BU = (byte) (Main.BU & 0x03);
+                Main.BL++;
+                Main.BL = (byte) (Main.BL & 0x0F);
+                if (Main.BL == 0) {
+                    skip();
+                }
+                break;
+            case 0x34: // XCD Y*
+                tmpByte = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                Main.accummulator = tmpByte;
+                Main.BU = (byte) (Main.BU ^ ~param);
+                Main.BU = (byte) (Main.BU & 0x03);
+                if (Main.BL >= 1) {
+                    Main.BL--;
+                } else {
+                    Main.BL = 15;
+                }
+                if (Main.BL == 15) {
+                    skip();
+                }
+                break;
+            case 0x38: // XC Y*
+                tmpByte = Main.RAM[Main.BU][Main.BL];
+                Main.RAM[Main.BU][Main.BL] = Main.accummulator;
+                Main.BU = (byte) (Main.BU ^ ~param);
+                Main.BU = (byte) (Main.BU & 0x03);
+                break;
+            case 0x3C: // LAM Y*
+                Main.accummulator = Main.RAM[Main.BU][Main.BL];
+                Main.BU = (byte) (Main.BU ^ ~param);
+                break;
+            case 0x40: // LBZ Y
+                Main.BL = 0x00;
+                Main.BU = (byte) param;
 
+                break;
+            case 0x44: // LBF Y
+                Main.BL = 0x0F;
+                Main.BU = (byte) param;
+                break;
+            case 0x48: // LBE Y
+                Main.BL = Main.E;
+                Main.BU = (byte) param;
+                break;
+            case 0x4C: // LBEP Y
+                Main.BL = (byte) ((Main.E + 1) & 0x0F);
+                Main.BU = (byte) param;
+                break;
+            case 0x50: // ADIS
+                Main.accummulator = (byte) (Main.accummulator + param);
+                if (Main.accummulator <= 15) {
+                    skip();
+                }
+                Main.accummulator = (byte) (Main.accummulator & 0b1111);
+                break;
+            case 0x60: // PP X*
+                if (Main.previousFlagPP == false) {
+                    Main.PPR = (byte) (~param & 0b1111);
+                } else {
+                    Main.PBR = (byte) (~param & 0b111);
+                }
+                Main.flagPP = true;
+                break;
+            case 0x70: // LAI X //! NO IO
+                Main.accummulator = (byte) param;
+                break;
+            case 0x80: // JMS X
+                if (previousFlagPP == true) {
+                    tmpInt = Main.programCounter & 0b1111111111;
+                    Main.stack[Main.stackPointer] = tmpInt;
+                    Main.stackPointer++;
+                    if (Main.stackPointer > 2) {
+                        Main.stackPointer = 0;
+                    }
+                    Main.programCounter = (Main.PBR << 10) | (Main.PPR << 6) | param;
+                } else {
+                    tmpInt = Main.programCounter & 0b1111111111;
+                    Main.stack[Main.stackPointer] = tmpInt;
+                    Main.stackPointer++;
+                    if (Main.stackPointer > 2) {
+                        Main.stackPointer = 0;
+                    }
+                    Main.programCounter = (Main.programCounter & 0b1110000000000) | (15 << 6) | param;
+                }
+                break;
+            case 0xC0: // JMP X
+                if (previousFlagPP == true) {
+                    Main.programCounter = (Main.PBR << 10) | (Main.PPR << 6) | param;
+                } else {
+                    tmpInt = Main.programCounter & 0b1111111000000;
+                    tmpInt = tmpInt | param;
+                    Main.programCounter = tmpInt;
+                }
+                break;
             default:
-                System.out.println("Illigal instruction");
+                System.out.println("Illegal instruction");
                 return;
         }
-
+        Main.previousFlagPP = false;
     }
 
+    // 0x60 is PP and needs to be skiped
     private static void skip() {
         while ((Main.ROM[programCounter] & 0b11110000) == 0x60) {
-            programCounter++;
+            Main.programCounter++;
         }
-        programCounter++;
+        Main.programCounter++;
     }
 
     private static int returnIndexOfInstruction(int instruction, Instruction[] listOFInstructions) {
