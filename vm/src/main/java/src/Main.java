@@ -37,11 +37,23 @@ public class Main {
     private static byte BU;
     private static byte E;
 
+    private static byte[] KInputs = new byte[4];
+    private static byte[] IInputs = new byte[4];
+    private static byte KSelected = 0;
+    private static byte ISelected = 0;
+
     // flags
     private static boolean secondsFlag;
     private static boolean carryFlag;
     private static boolean flagOne;
     private static boolean flagTwo;
+    private static boolean invertedPowerOnDLines = false;
+    private static boolean floatingModeOnDLines = false;
+
+    private static int displayLach = 0;
+    private static int DLines = 0;
+    private static int addresControlLines = 0;
+    private static int masterStrobeLach = 0;
 
     private static boolean flagPP = false;
     private static boolean previousFlagPP = false;
@@ -244,9 +256,9 @@ public class Main {
                 break;
             case 0x0F: // EUR
                 if ((accummulator & 0x1) == 1) {
-                    // Do somthing IO
+                    Main.invertedPowerOnDLines = false;
                 } else {
-                    // Do somthing else IO
+                    Main.invertedPowerOnDLines = true;
                 }
                 if (((accummulator >> 2) & 0x1) == 1) {
                     secondfFlag.setSignalFreqency(true);
@@ -295,12 +307,84 @@ public class Main {
                 }
                 break;
             case 0x18: // DISB
+                Main.floatingModeOnDLines = false;
+                Main.displayLach = Main.DLines = Main.RAM[Main.BU][Main.BL];
+                Main.displayLach = Main.DLines = Main.displayLach << 4;
+                Main.displayLach = Main.DLines = Main.accummulator;
+                if (Main.invertedPowerOnDLines = true) {
+                    Main.DLines = (~Main.DLines & 0b11111111);
+                }
                 break;
             case 0x19: // MVS
+                Main.floatingModeOnDLines = true;
+                Main.addresControlLines = Main.masterStrobeLach;
                 break;
-            case 0x1A: // OUT
+            case 0x1A: // OUT //! needs to output a pulse ;not implemented
+                Main.DLines = Main.RAM[Main.BU][Main.BL];
+                Main.DLines = Main.displayLach << 4;
+                Main.displayLach = Main.DLines = Main.accummulator;
+                if (Main.invertedPowerOnDLines = true) {
+                    Main.DLines = (~Main.DLines & 0b11111111);
+                }
                 break;
-            case 0x1B: // DISN
+            case 0x1B: // DISN //! how does decode works?
+                Main.floatingModeOnDLines = false;
+                if (Main.carryFlag == true) {
+                    Main.displayLach = 0b10000000;
+                }
+                switch (Main.accummulator) {
+                    case 0:
+                        Main.displayLach = Main.displayLach | 0b01111110;
+                        break;
+                    case 1:
+                        Main.displayLach = Main.displayLach | 0b00110000;
+                        break;
+                    case 2:
+                        Main.displayLach = Main.displayLach | 0b01101101;
+                        break;
+                    case 3:
+                        Main.displayLach = Main.displayLach | 0b01111001;
+                        break;
+                    case 4:
+                        Main.displayLach = Main.displayLach | 0b00110011;
+                        break;
+                    case 5:
+                        Main.displayLach = Main.displayLach | 0b01011011;
+                        break;
+                    case 6:
+                        Main.displayLach = Main.displayLach | 0b01011111;
+                        break;
+                    case 7:
+                        Main.displayLach = Main.displayLach | 0b01110000;
+                        break;
+                    case 8:
+                        Main.displayLach = Main.displayLach | 0b01111111;
+                        break;
+                    case 9:
+                        Main.displayLach = Main.displayLach | 0b01111011;
+                        break;
+                    case 10:
+                        Main.displayLach = Main.displayLach | 0b01110111;
+                        break;
+                    case 11:
+                        Main.displayLach = Main.displayLach | 0b00011111;
+                        break;
+                    case 12:
+                        Main.displayLach = Main.displayLach | 0b01001110;
+                        break;
+                    case 13:
+                        Main.displayLach = Main.displayLach | 0b00111101;
+                        break;
+                    case 14:
+                        Main.displayLach = Main.displayLach | 0b01001111;
+                        break;
+                    case 15:
+                        Main.displayLach = Main.displayLach | 0b01000111;
+                        break;
+
+                    default:
+                        break;
+                }
                 break;
             case 0x1C: // SZM B
                 tmpByte = Main.RAM[BU][BL];
@@ -321,8 +405,50 @@ public class Main {
                 Main.RAM[BU][BL] = (byte) (Main.RAM[BU][BL] & tmpByte);
                 break;
             case 0x28: // SZK
+                tmpByte = KSelected; // 8, 4, 2, 1 are the walues for individual bits
+                boolean tmpFlagK = true;
+                if ((tmpByte & 0b1000) == 1) {
+                    if (Main.KInputs[4] == 1)
+                        tmpFlagK = false;
+                }
+                if ((tmpByte & 0b100) == 1) {
+                    if (Main.KInputs[3] == 1)
+                        tmpFlagK = false;
+                }
+                if ((tmpByte & 0b10) == 1) {
+                    if (Main.KInputs[2] == 1)
+                        tmpFlagK = false;
+                }
+                if ((tmpByte & 0b1) == 1) {
+                    if (Main.KInputs[1] == 1)
+                        tmpFlagK = false;
+                }
+                if (tmpFlagK) {
+                    skip();
+                }
                 break;
             case 0x29: // SZI
+                tmpByte = ISelected; // 8, 4, 2, 1 are the walues for individual bits
+                boolean tmpFlagI = true;
+                if ((tmpByte & 0b1000) == 1) {
+                    if (Main.IInputs[4] == 1)
+                        tmpFlagI = false;
+                }
+                if ((tmpByte & 0b100) == 1) {
+                    if (Main.IInputs[3] == 1)
+                        tmpFlagI = false;
+                }
+                if ((tmpByte & 0b10) == 1) {
+                    if (Main.IInputs[2] == 1)
+                        tmpFlagI = false;
+                }
+                if ((tmpByte & 0b1) == 1) {
+                    if (Main.IInputs[1] == 1)
+                        tmpFlagI = false;
+                }
+                if (tmpFlagI) {
+                    skip();
+                }
                 break;
             case 0x2A: // RF1
                 Main.flagOne = false;
@@ -386,7 +512,6 @@ public class Main {
             case 0x40: // LBZ Y
                 Main.BL = 0x00;
                 Main.BU = (byte) param;
-
                 break;
             case 0x44: // LBF Y
                 Main.BL = 0x0F;
@@ -415,8 +540,10 @@ public class Main {
                 }
                 Main.flagPP = true;
                 break;
-            case 0x70: // LAI X //! NO IO
+            case 0x70: // LAI X
                 Main.accummulator = (byte) param;
+                Main.KSelected = (byte) param;
+                Main.ISelected = (byte) param;
                 break;
             case 0x80: // JMS X
                 if (previousFlagPP == true) {
@@ -470,6 +597,20 @@ public class Main {
             }
         }
         return -1;
+    }
+
+    public static void setKInputs(byte[] input) {
+        for (int i = 0; i < KInputs.length; i++) {
+            if (input[i] == 0 || input[i] == 1)
+                Main.KInputs[i] = input[i];
+        }
+    }
+
+    public static void setIInputs(byte[] input) {
+        for (int i = 0; i < IInputs.length; i++) {
+            if (input[i] == 0 || input[i] == 1)
+                Main.IInputs[i] = input[i];
+        }
     }
 }
 
