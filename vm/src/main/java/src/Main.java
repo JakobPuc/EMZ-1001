@@ -50,6 +50,11 @@ public class Main {
     private static boolean invertedPowerOnDLines = false;
     private static boolean floatingModeOnDLines = false;
 
+    // lach
+    private static boolean selectorForProgramCounterOrLach = false;
+
+    private static boolean EXTPulse = false;
+
     private static int displayLach = 0;
     private static int DLines = 0;
     private static int addresControlLines = 0;
@@ -187,6 +192,7 @@ public class Main {
     }
 
     private static void executeInstruction(int opCode, int param, SignalSimulator clock, SignalSimulator secondfFlag) {
+        Main.EXTPulse = false;
         Main.previousFlagPP = Main.flagPP;
         Main.flagPP = false;
         int tmpInt = 0;
@@ -216,8 +222,45 @@ public class Main {
                 skip();
                 break;
             case 0x04: // PSH
+                if ((Main.BL >= 0) && (Main.BL <= 12)) {
+                    tmpInt = 1;
+                    tmpInt = tmpInt << Main.BL;
+                    Main.masterStrobeLach = Main.masterStrobeLach | tmpInt;
+                    break;
+                }
+                if (Main.BL == 13) {
+                    // set multiplex operation
+                    break;
+                }
+                if (Main.BL == 14) {
+                    Main.floatingModeOnDLines = false;
+                    break;
+                }
+                if (Main.BL == 15) {
+                    Main.masterStrobeLach = 0b1111111111111;
+                    break;
+                }
                 break;
             case 0x05: // PSL
+                if ((Main.BL >= 0) && (Main.BL <= 12)) {
+                    tmpInt = 1;
+                    tmpInt = tmpInt << Main.BL;
+                    tmpInt = ~tmpInt;
+                    Main.masterStrobeLach = Main.masterStrobeLach | tmpInt;
+                    break;
+                }
+                if (Main.BL == 13) {
+                    // set static operation
+                    break;
+                }
+                if (Main.BL == 14) {
+                    Main.floatingModeOnDLines = true;
+                    break;
+                }
+                if (Main.BL == 15) {
+                    Main.masterStrobeLach = 0b0;
+                    break;
+                }
                 break;
             case 0x06: // AND
                 accummulator = (byte) (accummulator & (RAM[BU][BL]) & 0x0F);
@@ -241,7 +284,7 @@ public class Main {
             case 0x0A: // STC
                 Main.carryFlag = true;
                 break;
-            case 0x0B:
+            case 0x0B: // RSC
                 Main.carryFlag = false;
                 break;
             case 0x0C: // LAE
@@ -252,7 +295,16 @@ public class Main {
                 Main.accummulator = Main.E;
                 Main.E = tmpByte;
                 break;
-            case 0x0E: // INP
+            case 0x0E: // INP //TODO chc
+                if (Main.floatingModeOnDLines == true) {
+                    tmpInt = Main.DLines;
+                    Main.accummulator = (byte) (Main.DLines & 0b1111);
+                    Main.RAM[BU][BL] = (byte) ((tmpInt >> 4) & 0b1111);
+                } else {
+                    tmpInt = Main.displayLach;
+                    Main.accummulator = (byte) (Main.displayLach & 0b1111);
+                    Main.RAM[BU][BL] = (byte) ((tmpInt >> 4) & 0b1111);
+                }
                 break;
             case 0x0F: // EUR
                 if ((accummulator & 0x1) == 1) {
@@ -272,7 +324,7 @@ public class Main {
             case 0x11: // XABU
                 tmpByte = Main.BU;
                 Main.BU = (byte) (Main.accummulator & 0b11);
-                Main.accummulator = (byte) (Main.accummulator & 0b11);
+                Main.accummulator = (byte) (Main.accummulator & 0b1100);
                 Main.accummulator = (byte) (Main.accummulator | tmpByte);
                 break;
             case 0x12: // LAB
@@ -284,14 +336,12 @@ public class Main {
                 Main.BL = tmpByte;
                 break;
             case 0x14: // ADCS
-                if (Main.carryFlag == true) {
-                    Main.accummulator++;
-                }
                 Main.accummulator = (byte) (Main.accummulator + Main.RAM[BU][BL]);
                 if (Main.accummulator > 15) {
                     Main.carryFlag = true;
                 } else {
                     Main.carryFlag = false;
+                    skip();
                 }
                 Main.accummulator = (byte) (Main.accummulator & 0b1111);
                 break;
@@ -306,7 +356,7 @@ public class Main {
                     skip();
                 }
                 break;
-            case 0x18: // DISB
+            case 0x18: // DISB //! Not final may change
                 Main.floatingModeOnDLines = false;
                 Main.displayLach = Main.DLines = Main.RAM[Main.BU][Main.BL];
                 Main.displayLach = Main.DLines = Main.displayLach << 4;
@@ -327,7 +377,7 @@ public class Main {
                     Main.DLines = (~Main.DLines & 0b11111111);
                 }
                 break;
-            case 0x1B: // DISN //! how does decode works?
+            case 0x1B: // DISN //! Not final may change
                 Main.floatingModeOnDLines = false;
                 if (Main.carryFlag == true) {
                     Main.displayLach = 0b10000000;
@@ -381,10 +431,13 @@ public class Main {
                     case 15:
                         Main.displayLach = Main.displayLach | 0b01000111;
                         break;
-
                     default:
                         break;
                 }
+                if (Main.invertedPowerOnDLines == true) {
+                    Main.displayLach = (~Main.displayLach) & 0b11111111;
+                }
+                Main.DLines = Main.displayLach;
                 break;
             case 0x1C: // SZM B
                 tmpByte = Main.RAM[BU][BL];
