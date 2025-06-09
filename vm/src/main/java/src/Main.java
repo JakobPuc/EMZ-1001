@@ -1,17 +1,19 @@
 package src;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Main {
 
     public static final String srcFile = "emzasm/bin/zaporedje.bin";
+    public static final boolean debugmode = false;
 
     // ! not final may change
     private static final int sizeOfRom = 1024; // size of ROM
@@ -91,11 +93,17 @@ public class Main {
         } catch (FileToLongExeption e) {
             e.printStackTrace();
         }
+        if (Main.debugmode == false) {
+            simulation(instructionArray);
+        } else {
+            simulationDebug(instructionArray);
+        }
+        // readCLI();
         // Start a simulation
-        simulation(instructionArray);
+        // simulation(instructionArray);
         //
-        dumpROM();
-        dumpRAM();
+        // dumpROM();
+        // dumpRAM();
     }
 
     private static List<Instruction> getInstructionArray() {
@@ -177,21 +185,65 @@ public class Main {
                     break;
                 }
                 if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
-                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0, clockGenerator,
+                    executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0,
                             secondsFlagSetter);
                 } else {
                     executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
-                            instruction & ArraayOfInstructions[indexOfOnstruction].getMask(), clockGenerator,
+                            instruction & ArraayOfInstructions[indexOfOnstruction].getMask(),
                             secondsFlagSetter);
                 }
-
             }
         }
+        dumpROM();
+        dumpRAM();
         clockGenerator.kill();
         secondsFlagSetter.kill();
     }
 
-    private static void executeInstruction(int opCode, int param, SignalSimulator clock, SignalSimulator secondfFlag) {
+    private static void simulationDebug(Instruction[] ArraayOfInstructions) {
+        SignalSimulator secondsFlagSetter = new SignalSimulator();
+        secondsFlagSetter.start();
+        int instruction = 0;
+        int indexOfOnstruction = 0;
+        int executeNumberOf = 0;
+        while (true) {
+            executeNumberOf = readCLI();
+            if (Main.programCounter >= Main.sizeOfRom) {
+                break;
+            }
+            while (true) {
+                if (executeNumberOf >= 0) {
+                    instruction = Main.ROM[Main.programCounter];
+                    indexOfOnstruction = returnIndexOfInstruction(instruction, ArraayOfInstructions);
+                    executeNumberOf--;
+                    Main.programCounter++;
+                    if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
+                        executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0,
+                                secondsFlagSetter);
+                    } else {
+                        executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
+                                instruction & ArraayOfInstructions[indexOfOnstruction].getMask(),
+                                secondsFlagSetter);
+                    }
+                    if (indexOfOnstruction == -1) {
+                        System.out.println("Instruction does not exist");
+                        break;
+                    }
+                }
+                if (executeNumberOf == 0) {
+                    dumpRAM();
+                    System.out.println("Executing inst: " +
+                            String.format("0x%04X ", ArraayOfInstructions[indexOfOnstruction].getOpCode()) +
+                            " program counter " + Main.programCounter);
+                    break;
+                }
+            }
+        }
+        secondsFlagSetter.kill();
+    }
+
+    private static void executeInstruction(int opCode, int param,
+            /* SignalSimulator clock, */ SignalSimulator secondfFlag) {
         Main.EXTPulse = false;
         Main.previousFlagPP = Main.flagPP;
         Main.flagPP = false;
@@ -664,6 +716,23 @@ public class Main {
             if (input[i] == 0 || input[i] == 1)
                 Main.IInputs[i] = input[i];
         }
+    }
+
+    public static int readCLI() {
+        int n = 0;
+        try {
+            BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+            String s = r.readLine();
+            if (s.isEmpty()) {
+                n = 1;
+                return n;
+            } else {
+                n = Integer.valueOf(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return n;
     }
 }
 
