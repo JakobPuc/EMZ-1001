@@ -1,4 +1,4 @@
-package src;
+package src.logic;
 
 public class SignalSimulator extends Thread implements Runnable {
 	private int freqrency = 60; // or 50 for 50Hz
