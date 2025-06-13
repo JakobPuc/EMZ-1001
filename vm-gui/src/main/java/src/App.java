@@ -1,33 +1,27 @@
 package src;
 
+import src.gui.Processor;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
-/**
- * JavaFX App
- */
 public class App extends Application {
 
-    private static Scene scene;
+	@Override
+	public void start(Stage primaryStage) {
+		Group root = new Group();
+		Scene scene = new Scene(root, 720, 480); // set width and height
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        
-        //scene = new Scene(new Group());
-        stage.setScene(scene);
-        stage.show();
-    }
+		Processor processor = new Processor();
 
+		root.getChildren().add(processor.getRootGroup());
+		primaryStage.setTitle("EMZ-1001 vm");
+		primaryStage.setScene(scene); // set the scene on the stage
+		primaryStage.show();
+	}
 
-
-    public static void main(String[] args) {
-        launch();
-    }
-
+	public static void main(String[] args) {
+		launch(args);
+	}
 }

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Main {
 
-	public static final String srcFile = "../emzasm/bin/zaporedje.bin";
+	public static final String srcFile = "emzasm/bin/zaporedje.bin";
 	public static final boolean debugmode = false;
 
 	// ! not final may change
