@@ -75,7 +75,7 @@ public class Emz1001 {
 	// stack //! to change
 	private final int sizeOfStack = 3; // depth of stack
 	private int[] stack = new int[sizeOfStack]; // stack
-	private byte stackPointer = 0; // if stack pointer == 0 that means that you arent in a subroutine
+	private int stackPointer = 0; // if stack pointer == 0 that means that you arent in a subroutine
 
 	public Emz1001(File f) {
 		List<Instruction> InstructionArray = getInstructionArray();
@@ -146,102 +146,104 @@ public class Emz1001 {
 
 	public void StartPrcesor(boolean debug) {
 		if (debug == false) {
-			simulation(this.instructions);
+			// simulation(this.instructions);
 		} else {
-			simulationDebug(this.instructions);
+			// simulationDebug(this.instructions);
 		}
 	}
 
-	private void simulation(Instruction[] ArraayOfInstructions) {
-		SignalSimulator secondsFlagSetter = new SignalSimulator();
-		SignalSimulator clockGenerator = new SignalSimulator();
-		try {
-			clockGenerator.setSignalFreqency(procesorFreq);
-		} catch (NegativeFrequencyException e) {
-			e.printStackTrace();
-		}
-		secondsFlagSetter.start();
-		clockGenerator.start();
-		int instruction = 0;
-		while (true) {
-			// dumpRAM();
-			if (clockGenerator.getFlag()) {
-				clockGenerator.setFlag(false);
-				instruction = this.ROM[this.programCounter];
-				this.programCounter++;
-				if (this.programCounter >= this.sizeOfRom) {
-					break;
-				}
-				int indexOfOnstruction = returnIndexOfInstruction(instruction, ArraayOfInstructions);
-				if (indexOfOnstruction == -1) {
-					System.out.println("Instruction does not exist");
-					break;
-				}
-				if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
-					executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0,
-							secondsFlagSetter);
-				} else {
-					executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
-							instruction & ArraayOfInstructions[indexOfOnstruction]
-									.getMask(),
-							secondsFlagSetter);
-				}
-			}
-		}
-		// dumpROM();
-		// dumpRAM();
-		// clockGenerator.kill();
-		// secondsFlagSetter.kill();
-	}
-
-	private void simulationDebug(Instruction[] ArraayOfInstructions) {
-		SignalSimulator secondsFlagSetter = new SignalSimulator();
-		secondsFlagSetter.start();
-		int instruction = 0;
-		int indexOfOnstruction = 0;
-		int executeNumberOf = 0;
-		while (true) {
-			executeNumberOf = readCLI();
-			if (this.programCounter >= this.sizeOfRom) {
-				break;
-			}
-			while (true) {
-				if (executeNumberOf >= 0) {
-					instruction = this.ROM[this.programCounter];
-					indexOfOnstruction = returnIndexOfInstruction(instruction,
-							ArraayOfInstructions);
-					executeNumberOf--;
-					this.programCounter++;
-					if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
-						executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
-								0,
-								secondsFlagSetter);
-					} else {
-						executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
-								instruction & ArraayOfInstructions[indexOfOnstruction]
-										.getMask(),
-								secondsFlagSetter);
-					}
-					if (indexOfOnstruction == -1) {
-						System.out.println("Instruction does not exist");
-						break;
-					}
-				}
-				if (executeNumberOf == 0) {
-					dumpRAM();
-					System.out.println("Executing inst: " +
-							String.format("0x%04X ",
-									ArraayOfInstructions[indexOfOnstruction]
-											.getOpCode())
-							+
-							" program counter " + this.programCounter);
-					break;
-				}
-			}
-		}
-		secondsFlagSetter.kill();
-	}
-
+	/*
+	 * private void simulation(Instruction[] ArraayOfInstructions) {
+	 * SignalSimulator secondsFlagSetter = new SignalSimulator();
+	 * SignalSimulator clockGenerator = new SignalSimulator();
+	 * try {
+	 * clockGenerator.setSignalFreqency(procesorFreq);
+	 * } catch (NegativeFrequencyException e) {
+	 * e.printStackTrace();
+	 * }
+	 * secondsFlagSetter.start();
+	 * clockGenerator.start();
+	 * int instruction = 0;
+	 * while (true) {
+	 * // dumpRAM();
+	 * if (clockGenerator.getFlag()) {
+	 * clockGenerator.setFlag(false);
+	 * instruction = this.ROM[this.programCounter];
+	 * this.programCounter++;
+	 * if (this.programCounter >= this.sizeOfRom) {
+	 * break;
+	 * }
+	 * int indexOfOnstruction = returnIndexOfInstruction(instruction,
+	 * ArraayOfInstructions);
+	 * if (indexOfOnstruction == -1) {
+	 * System.out.println("Instruction does not exist");
+	 * break;
+	 * }
+	 * if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
+	 * executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(), 0,
+	 * secondsFlagSetter);
+	 * } else {
+	 * executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
+	 * instruction & ArraayOfInstructions[indexOfOnstruction]
+	 * .getMask(),
+	 * secondsFlagSetter);
+	 * }
+	 * }
+	 * }
+	 * // dumpROM();
+	 * // dumpRAM();
+	 * // clockGenerator.kill();
+	 * // secondsFlagSetter.kill();
+	 * }
+	 * 
+	 * private void simulationDebug(Instruction[] ArraayOfInstructions) {
+	 * SignalSimulator secondsFlagSetter = new SignalSimulator();
+	 * secondsFlagSetter.start();
+	 * int instruction = 0;
+	 * int indexOfOnstruction = 0;
+	 * int executeNumberOf = 0;
+	 * while (true) {
+	 * executeNumberOf = readCLI();
+	 * if (this.programCounter >= this.sizeOfRom) {
+	 * break;
+	 * }
+	 * while (true) {
+	 * if (executeNumberOf >= 0) {
+	 * instruction = this.ROM[this.programCounter];
+	 * indexOfOnstruction = returnIndexOfInstruction(instruction,
+	 * ArraayOfInstructions);
+	 * executeNumberOf--;
+	 * this.programCounter++;
+	 * if (ArraayOfInstructions[indexOfOnstruction].getMask() == 0x00) {
+	 * executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
+	 * 0,
+	 * secondsFlagSetter);
+	 * } else {
+	 * executeInstruction(ArraayOfInstructions[indexOfOnstruction].getOpCode(),
+	 * instruction & ArraayOfInstructions[indexOfOnstruction]
+	 * .getMask(),
+	 * secondsFlagSetter);
+	 * }
+	 * if (indexOfOnstruction == -1) {
+	 * System.out.println("Instruction does not exist");
+	 * break;
+	 * }
+	 * }
+	 * if (executeNumberOf == 0) {
+	 * dumpRAM();
+	 * System.out.println("Executing inst: " +
+	 * String.format("0x%04X ",
+	 * ArraayOfInstructions[indexOfOnstruction]
+	 * .getOpCode())
+	 * +
+	 * " program counter " + this.programCounter);
+	 * break;
+	 * }
+	 * }
+	 * }
+	 * secondsFlagSetter.kill();
+	 * }
+	 */
 	private void executeInstruction(int opCode, int param,
 			/* SignalSimulator clock, */ SignalSimulator secondfFlag) {
 		this.EXTPulse = false;
