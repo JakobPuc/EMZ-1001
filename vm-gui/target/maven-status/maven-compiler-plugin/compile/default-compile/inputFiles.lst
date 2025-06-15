@@ -1,4 +1,7 @@
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/App.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/module-info.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/logic/Instruction.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/gui/Processor.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/logic/Emz1001.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/logic/SignalSimulator.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/src/logic/InstructionSetEmz1001.java

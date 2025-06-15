@@ -1,4 +1,9 @@
+src/logic/SignalSimulator.class
+src/logic/Instruction.class
+src/logic/InstructionSetEmz1001.class
 module-info.class
+src/logic/FileToLongExeption.class
 src/logic/Emz1001.class
 src/App.class
 src/gui/Processor.class
+src/logic/NegativeFrequencyException.class
