@@ -104,6 +104,7 @@ public class Emz1001 {
 	// may be changed to public
 	// this method that executes instructions
 	private void executeInstruction(int opcode, int param) {
+		this.stateOfPins[6] = 0; // sets EXIT to 0
 		this.secondsFlag = this.secondsTimer.getFlag();
 		int tmp = 0;
 		this.previousPPFlag = this.PPFlag;
@@ -131,9 +132,46 @@ public class Emz1001 {
 				this.programCounter = tmp;
 				skip();
 				break;
-			case 0x05: // PSH does somthing with IO
+			case 0x05: // PSH does somthing with IOException
+				if ((this.BL <= 12) && (this.BL >= 0)) {
+					tmp = 1;
+					tmp = tmp << this.BL;
+					this.lachOnDLines = this.lachOnDLines | tmp;
+					break;
+				}
+				if (this.BL == 13) {
+					// SET MULTIPLEX OPERATION
+					break;
+				}
+				if (this.BL == 14) {
+					this.floatingModeOnDLines = false;
+					break;
+				}
+				if (this.BL == 15) {
+					this.lachOnDLines = 0b1111111111111;
+					break;
+				}
 				break;
 			case 0x06: // PSL does somthing with IO
+				if ((this.BL >= 0) && (this.BL <= 12)) {
+					tmp = 1;
+					tmp = tmp << this.BL;
+					tmp = ~tmp;
+					this.lachOnDLines = this.lachOnDLines | tmp;
+					break;
+				}
+				if (this.BL == 13) {
+					// set static operation
+					break;
+				}
+				if (this.BL == 14) {
+					this.floatingModeOnDLines = true;
+					break;
+				}
+				if (this.BL == 15) {
+					this.lachOnDLines = 0b0;
+					break;
+				}
 				break;
 			case 0x07: // AND
 				this.ACC = this.RAM[this.BU][this.BL] & this.ACC;
