@@ -36,7 +36,7 @@ public class Emz1001 {
 	private int sizeOfRom; // default 1024
 	private int[] ROM;
 	private int programCounter; // is 13 bits long
-	private Instruction[] instructionArray;
+	// private Instruction[] instructionArray;
 
 	// stack
 	private int sizeOfStack = 4;
@@ -53,6 +53,7 @@ public class Emz1001 {
 	private int lachOnDLines;
 	private int stateOfDLines;
 	private int lachInALines; // TODO may need to implement master slave lach
+	private int stateOfALines;
 
 	// registers
 	private int PPR; // prepere page register
@@ -64,10 +65,13 @@ public class Emz1001 {
 	private int selectedI; // which input i is selected
 
 	// pins
-	private int numberOfPins = 40; // number of all pins including power
+	private final int numberOfPins = 40; // number of all pins including power
 	private byte[] stateOfPins; // includes non io pins, io pins in difrent arreys but mirrored in here
-	private byte[] inputK = new byte[4]; // 1 or 0
-	private byte[] inputI = new byte[4]; // 1 or 0
+	private boolean[] inputK = new boolean[4]; // 1 or 0
+	private boolean[] inputI = new boolean[4]; // 1 or 0
+	private boolean[] pinsD = new boolean[8];
+	private boolean[] pinsA = new boolean[13];
+	private boolean EXIT;
 
 	// instructions
 	private Instruction[] instructions;
@@ -82,6 +86,7 @@ public class Emz1001 {
 	}
 
 	public Emz1001(File f) {
+
 		this.programCounter = 0;
 		this.sizeOfRom = 1024;
 		this.ROM = new int[this.sizeOfRom];
@@ -119,7 +124,6 @@ public class Emz1001 {
 				}
 			}
 		} catch (IOException e) {
-			System.out.println("O no chek faild please report the problem :)");
 		}
 		return tmpROM;
 	}
@@ -297,11 +301,35 @@ public class Emz1001 {
 
 	}
 
+	private void decodeDlines() {
+		int tmp = this.stateOfDLines;
+		for (int i = 0; i < 8; i++) {
+			if ((tmp & 1) == 1) {
+				this.pinsD[i] = true;
+			} else {
+				this.pinsD[i] = false;
+			}
+			tmp = tmp >> 1;
+		}
+	}
+
+	private void decodeAlines() {
+		int tmp = this.stateOfALines;
+		for (int i = 0; i < 13; i++) {
+			if ((tmp & 1) == 1) {
+				this.pinsA[i] = true;
+			} else {
+				this.pinsA[i] = true;
+			}
+			tmp = tmp >> 1;
+		}
+	}
+
 	// may be changed to public
 	// this method that executes instructions
 	private void executeInstruction(int opcode, int param) {
-		this.stateOfPins[6] = 0; // sets EXIT to 0
 		this.secondsFlag = this.secondsTimer.getFlag();
+		this.EXIT = false;
 		int tmp = 0;
 		this.previousPPFlag = this.PPFlag;
 		switch (opcode) {
@@ -469,10 +497,24 @@ public class Emz1001 {
 				this.lachOnDLines = this.RAM[this.BU][this.BL];
 				this.lachOnDLines = this.lachOnDLines << 4;
 				this.lachOnDLines = this.lachOnDLines | this.ACC;
+				if (this.invertedPolarityOnDLines == true) {
+					this.lachOnDLines = (~this.lachOnDLines) & 0b11111111;
+				}
+				this.stateOfDLines = this.lachOnDLines;
+				decodeDlines();
 				break;
 			case 0x19: // MVS
+				this.stateOfALines = this.lachInALines;
+				this.floatingModeOnDLines = true;
+				decodeAlines();
 				break;
 			case 0x1A: // OUT
+				this.stateOfDLines = 0;
+				this.stateOfDLines = this.RAM[this.BU][this.BL];
+				this.stateOfDLines = this.stateOfDLines << 4;
+				this.stateOfDLines = this.stateOfDLines | this.ACC;
+				this.EXIT = true;
+				decodeDlines();
 				break;
 			case 0x1B: // DISN
 				this.floatingModeOnDLines = false;
@@ -535,6 +577,7 @@ public class Emz1001 {
 					this.lachOnDLines = (~this.lachOnDLines) & 0b11111111;
 				}
 				this.stateOfDLines = this.lachOnDLines;
+				decodeDlines();
 				break;
 			case 0x1C: // SZM B
 				tmp = this.RAM[this.BU][this.BL];
@@ -555,8 +598,50 @@ public class Emz1001 {
 				this.RAM[BU][BL] = (byte) (this.RAM[this.BU][this.BL] & tmp);
 				break;
 			case 0x28: // SZK
+				tmp = this.selectedK;
+				boolean tmpFlagK = true;
+				if ((tmp & 0b1000) == 1) {
+					if (this.inputK[3] == true)
+						tmpFlagK = false;
+				}
+				if ((tmp & 0b100) == 1) {
+					if (this.inputK[2] == true)
+						tmpFlagK = false;
+				}
+				if ((tmp & 0b10) == 1) {
+					if (this.inputK[1] == true)
+						tmpFlagK = false;
+				}
+				if ((tmp & 0b1) == 1) {
+					if (this.inputK[0] == true)
+						tmpFlagK = false;
+				}
+				if (tmpFlagK) {
+					skip();
+				}
 				break;
 			case 0x29: // SZI
+				tmp = this.selectedI;
+				boolean tmpFlagI = true;
+				if ((tmp & 0b1000) == 1) {
+					if (this.inputI[3] == true)
+						tmpFlagI = false;
+				}
+				if ((tmp & 0b100) == 1) {
+					if (this.inputI[2] == true)
+						tmpFlagI = false;
+				}
+				if ((tmp & 0b10) == 1) {
+					if (this.inputI[1] == true)
+						tmpFlagI = false;
+				}
+				if ((tmp & 0b1) == 1) {
+					if (this.inputI[0] == true)
+						tmpFlagI = false;
+				}
+				if (tmpFlagI) {
+					skip();
+				}
 				break;
 			case 0x2A: // RF1
 				this.flag1 = false;
@@ -596,38 +681,6 @@ public class Emz1001 {
 				tmp = this.RAM[this.BU][this.BL];
 				this.RAM[this.BU][this.BL] = (byte) this.ACC;
 				this.ACC = tmp;
-				this.BU = (byte) (this.BU ^ ~param);
-				this.BU = (byte) (this.BU & 0x03);
-				if (this.BL >= 1) {
-					this.BL--;
-				} else {
-					this.BL = 15;
-				}
-				if (this.BL == 15) {
-					skip();
-				}
-				break;
-			case 0x38: // XC Y*
-				tmp = this.RAM[this.BU][this.BL];
-				this.RAM[this.BU][this.BL] = (byte) this.ACC;
-				this.BU = (byte) (this.BU ^ ~param);
-				this.BU = (byte) (this.BU & 0x03);
-				break;
-			case 0x3C: // LAM Y*
-				this.ACC = this.RAM[this.BU][this.BL];
-				this.BU = (byte) (this.BU ^ ~param);
-				break;
-			case 0x40: // LBZ Y
-				this.BL = 0x00;
-				this.BU = (byte) param;
-				break;
-			case 0x44: // LBF Y
-				this.BL = 0x0F;
-				this.BU = (byte) param;
-				break;
-			case 0x48: // LBE Y
-				this.BL = (byte) this.E;
-				this.BU = (byte) param;
 				break;
 			case 0x4C: // LBEP Y
 				this.BL = (byte) ((this.E + 1) & 0x0F);

@@ -1,0 +1,131 @@
+package main;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class App extends Application {
+
+	private Pane pane;
+	private List<Line> lines = new ArrayList<>();
+	private List<Double> points = new ArrayList<>();
+	private boolean drawing = false;
+	private Line rubberBandLine = null; // temporary line following mouse
+
+	@Override
+	public void start(Stage primaryStage) {
+		pane = new Pane();
+		pane.setPrefSize(600, 400);
+
+		Circle startCircle = createCircle(100, 100, Color.GREEN);
+		Circle endCircle = createCircle(500, 300, Color.RED);
+
+		pane.getChildren().addAll(startCircle, endCircle);
+
+		pane.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+			handleClick(e, startCircle, endCircle);
+		});
+
+		pane.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
+			handleMouseMoved(e);
+		});
+
+		Scene scene = new Scene(pane);
+		primaryStage.setScene(scene);
+		primaryStage.setTitle("Draw Lines Following Mouse");
+		primaryStage.show();
+	}
+
+	private Circle createCircle(double x, double y, Color color) {
+		Circle c = new Circle(x, y, 15, color);
+		c.setStroke(Color.BLACK);
+		return c;
+	}
+
+	private void handleClick(MouseEvent e, Circle startCircle, Circle endCircle) {
+		double x = e.getX();
+		double y = e.getY();
+
+		if (!drawing && isInsideCircle(x, y, startCircle)) {
+			drawing = true;
+			points.clear();
+			points.add(startCircle.getCenterX());
+			points.add(startCircle.getCenterY());
+			System.out.println("Started line");
+		} else if (drawing && isInsideCircle(x, y, endCircle)) {
+			points.add(endCircle.getCenterX());
+			points.add(endCircle.getCenterY());
+			finalizeLine();
+			drawing = false;
+			System.out.println("Ended line");
+		} else if (drawing) {
+			points.add(x);
+			points.add(y);
+			finalizeLine();
+			System.out.println("Added break point at: " + x + ", " + y);
+		}
+	}
+
+	private void handleMouseMoved(MouseEvent e) {
+		if (!drawing || points.isEmpty())
+			return;
+
+		double lastX = points.get(points.size() - 2);
+		double lastY = points.get(points.size() - 1);
+
+		double mouseX = e.getX();
+		double mouseY = e.getY();
+
+		if (rubberBandLine == null) {
+			rubberBandLine = new Line();
+			rubberBandLine.setStroke(Color.GRAY);
+			rubberBandLine.getStrokeDashArray().addAll(5d, 5d); // dashed line
+			pane.getChildren().add(rubberBandLine);
+		}
+
+		rubberBandLine.setStartX(lastX);
+		rubberBandLine.setStartY(lastY);
+		rubberBandLine.setEndX(mouseX);
+		rubberBandLine.setEndY(mouseY);
+	}
+
+	private void finalizeLine() {
+		// Remove rubber band line on every click
+		if (rubberBandLine != null) {
+			pane.getChildren().remove(rubberBandLine);
+			rubberBandLine = null;
+		}
+
+		// Remove old lines
+		pane.getChildren().removeAll(lines);
+		lines.clear();
+
+		// Draw fixed line segments between all points
+		for (int i = 0; i < points.size() - 2; i += 2) {
+			Line line = new Line(points.get(i), points.get(i + 1), points.get(i + 2), points.get(i + 3));
+			line.setStroke(Color.BLUE);
+			line.setStrokeWidth(2);
+			lines.add(line);
+		}
+
+		pane.getChildren().addAll(lines);
+	}
+
+	private boolean isInsideCircle(double x, double y, Circle c) {
+		double dx = x - c.getCenterX();
+		double dy = y - c.getCenterY();
+		return dx * dx + dy * dy <= c.getRadius() * c.getRadius();
+	}
+
+	public static void main(String[] args) {
+		launch();
+	}
+}
