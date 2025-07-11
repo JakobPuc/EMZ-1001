@@ -152,7 +152,7 @@ public class Emz1001 {
 		}
 	}
 
-	public byte[][] gerRAM() {
+	public byte[][] getRAM() {
 		return this.RAM;
 	}
 
@@ -221,9 +221,7 @@ public class Emz1001 {
 				}
 			}
 		}
-		dumpRAM();
 		dumpROM();
-
 	}
 
 	private int readCliForDebug(Scanner sc) {
@@ -300,7 +298,6 @@ public class Emz1001 {
 				break;
 			}
 		}
-		dumpRAM();
 		dumpROM();
 		sc.close();
 

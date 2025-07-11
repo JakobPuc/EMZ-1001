@@ -13,7 +13,9 @@ public class SignalSimulator extends Thread implements Runnable {
 			try {
 				Thread.sleep(milis, nanos);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
+				break;
+				// e.printStackTrace();
 			}
 			this.flag = !this.flag;
 		}

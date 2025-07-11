@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -16,41 +17,54 @@ import javafx.scene.control.TextArea;
 import main.guiElements.SevenSegmentDisplay;
 import main.guiElements.Procesor;
 import main.logic.Emz1001;
+import main.logic.RamUpdater;
 
 public class App extends Application {
 
 	private File selectedFile;
 	private Emz1001 procesor;
+	private RamUpdater ramUpdater;
+	private SevenSegmentDisplay display;
+	private Procesor guiProcesor;
+	private Task<Void> procesorTask;
+	// private Scene newRamPanScene;
 	// tmp
 	private byte[][] RAM = new byte[4][16];
 
 	@Override
 	public void start(Stage stage) {
 		Pane root = new Pane();
-
+		guiProcesor = new Procesor();
+		guiProcesor.setLayoutY(50);
+		guiProcesor.hide();
 		Button openButton = new Button("Open file");
 		openButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				FileChooser fileChooser = new FileChooser();
 
-				selectedFile = fileChooser.showOpenDialog(stage);
-				System.out.println(selectedFile.getPath());
-				System.out.println("program started");
+				while (selectedFile == null) {
+					selectedFile = fileChooser.showOpenDialog(stage);
+				}
 
-				Task<Void> task = new Task<>() {
+				// guiProcesor = new Procesor();
+				guiProcesor.setScaleX(0.5);
+				guiProcesor.setScaleY(0.5);
+				guiProcesor.setLayoutX(200);
+				guiProcesor.setLayoutY(200);
+				guiProcesor.show();
+				// System.out.println(selectedFile.getPath());
+				// System.out.println("program started");
+				procesorTask = new Task<>() {
 					@Override
 					protected Void call() throws Exception {
 						procesor = new Emz1001(selectedFile);
-						System.out.println("LOL");
+						// System.out.println("LOL");
 						procesor.run(false);
-						System.out.println("program finished");
+						// System.out.println("program finished");
 						return null;
 					}
 				};
-				Thread backgroundThread = new Thread(task);
-				backgroundThread.setDaemon(true); // allows app to exit when main window closes
-				backgroundThread.start();
 
 			}
 		});
@@ -58,36 +72,61 @@ public class App extends Application {
 		Button openRamDebug = new Button("RAM de bug");
 		openRamDebug.setLayoutX(100);
 		openRamDebug.setOnAction(new EventHandler<ActionEvent>() {
-			boolean open = false;
-			Stage stage = new Stage();
+			Stage ramStage = new Stage();
 
 			@Override
 			public void handle(ActionEvent e) {
-				if (open == false) {
-					Pane root = new Pane();
+				if (ramStage == null || !ramStage.isShowing()) {
+					Pane newRamPane = new Pane();
 					TextArea textArea = new TextArea();
-					textArea.setPrefColumnCount(43);
-					textArea.setPrefRowCount(6);
 					textArea.setEditable(false);
-					textArea.setWrapText(false);
-					textArea.setText(dumpRAM());
+					newRamPane.getChildren().add(textArea);
 
-					root.getChildren().add(textArea);
-					Scene scene = new Scene(root);
-					stage.setScene(scene);
-					stage.sizeToScene();
-					stage.setScene(scene);
-					stage.setResizable(false);
-					stage.show();
-					open = !open;
+					Scene newRamScene = new Scene(newRamPane);
+
+					Task<Void> updateRam = new Task<Void>() {
+						@Override
+						protected Void call() throws Exception {
+							while (procesor == null) {
+								Thread.sleep(1);
+							}
+							ramUpdater = new RamUpdater(6, 43, procesor, textArea);
+							Platform.runLater(() -> {
+								ramStage.setScene(newRamScene);
+								ramStage.setResizable(false);
+								ramStage.setTitle("RAM Debug");
+								ramStage.sizeToScene();
+								ramStage.show();
+							});
+							ramUpdater.updateTextAreaConst();
+							return null;
+						}
+					};
+
+					Thread backgroundThread = new Thread(updateRam);
+					backgroundThread.setDaemon(true);
+					backgroundThread.start();
+
 				} else {
-					stage.hide();
-					open = !open;
+					ramStage.hide();
 				}
 			}
 		});
 
-		root.getChildren().addAll(openButton, openRamDebug);
+		Button startSimulation = new Button("Start");
+		startSimulation.setLayoutX(150);
+		startSimulation.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				Thread backgroundThread = new Thread(procesorTask);
+				backgroundThread.setDaemon(true); // allows app to exit when main window closes
+				backgroundThread.start();
+			}
+
+		});
+
+		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
 		/*
 		 * SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
 		 * Procesor cpu = new Procesor();
@@ -111,20 +150,13 @@ public class App extends Application {
 		stage.show();
 	}
 
+	@Override
+	public void stop() throws Exception {
+		System.exit(0);
+	}
+
 	public static void main(String[] args) {
 		launch(args);
 	}
 
-	public String dumpRAM() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Dump of RAM\n");
-		for (int i = 0; i < RAM.length; i++) {
-			for (int j = 0; j < RAM[i].length; j++) {
-				sb.append(String.format("%4s", Integer.toBinaryString(RAM[i][j]))
-						.replace(' ', '0')).append(" ");
-			}
-			sb.append("\n");
-		}
-		return sb.toString();
-	}
 }
