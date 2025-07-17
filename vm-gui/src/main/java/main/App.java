@@ -70,7 +70,7 @@ public class App extends Application {
 		});
 
 		Button openRamDebug = new Button("RAM de bug");
-		openRamDebug.setLayoutX(100);
+		openRamDebug.setLayoutX(80);
 		openRamDebug.setOnAction(new EventHandler<ActionEvent>() {
 			Stage ramStage = new Stage();
 
@@ -114,7 +114,7 @@ public class App extends Application {
 		});
 
 		Button startSimulation = new Button("Start");
-		startSimulation.setLayoutX(150);
+		startSimulation.setLayoutX(180);
 		startSimulation.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -127,8 +127,10 @@ public class App extends Application {
 		});
 
 		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
+
+		SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
+		root.getChildren().addAll(display);
 		/*
-		 * SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
 		 * Procesor cpu = new Procesor();
 		 * cpu.setScaleX(0.5);
 		 * cpu.setScaleY(0.5);
