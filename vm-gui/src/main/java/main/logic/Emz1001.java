@@ -742,4 +742,36 @@ public class Emz1001 {
 		}
 
 	}
+
+	public boolean[] getPinsA() {
+		return this.pinsA;
+	}
+
+	public boolean[] getPinsD() {
+		return this.pinsD;
+	}
+
+	public void setPinsD(boolean[] D) {
+		this.pinsD = D;
+	}
+
+	public boolean[] getPinsI() {
+		return this.inputI;
+	}
+
+	public boolean[] getPinsK() {
+		return this.inputK;
+	}
+
+	public void setPinsI(boolean[] pins) {
+		this.inputI = pins;
+	}
+
+	public void setPinsK(boolean[] pins) {
+		this.inputK = pins;
+	}
+
+	public boolean getDDir() {
+		return this.floatingModeOnDLines;
+	}
 }

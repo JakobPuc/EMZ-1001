@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Circle;
 import javafx.scene.control.Button;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -16,8 +17,10 @@ import javafx.scene.control.TextArea;
 
 import main.guiElements.SevenSegmentDisplay;
 import main.guiElements.Procesor;
+import main.guiElements.AOut;
 import main.logic.Emz1001;
 import main.logic.RamUpdater;
+import main.guiElements.Inputs;
 
 public class App extends Application {
 
@@ -29,7 +32,7 @@ public class App extends Application {
 	private Task<Void> procesorTask;
 	// private Scene newRamPanScene;
 	// tmp
-	private byte[][] RAM = new byte[4][16];
+	// private byte[][] RAM = new byte[4][16];
 
 	@Override
 	public void start(Stage stage) {
@@ -125,11 +128,18 @@ public class App extends Application {
 			}
 
 		});
+		AOut aOut = new AOut(500, 30, 5);
+
+		Inputs inp = new Inputs(200, 100, 5);
+		for (int i = 0; i < inp.getPins().length; i++) {
+			Circle[] b = inp.getPins();
+			root.getChildren().add(b[i]);
+		}
 
 		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
 
 		SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
-		root.getChildren().addAll(display);
+		root.getChildren().addAll(display, aOut);
 		/*
 		 * Procesor cpu = new Procesor();
 		 * cpu.setScaleX(0.5);
