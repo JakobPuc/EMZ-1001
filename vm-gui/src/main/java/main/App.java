@@ -130,12 +130,12 @@ public class App extends Application {
 		});
 		AOut aOut = new AOut(500, 30, 5);
 
-		Inputs inp = new Inputs(200, 100, 5);
-		for (int i = 0; i < inp.getPins().length; i++) {
-			Circle[] b = inp.getPins();
-			root.getChildren().add(b[i]);
-		}
-
+		Inputs inp = new Inputs(200, 100, 10);
+		// for (int i = 0; i < inp.getPins().length; i++) {
+		// Circle[] b = inp.getPins();
+		// root.getChildren().add(b[i]);
+		// }
+		root.getChildren().add(inp);
 		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
 
 		SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
