@@ -1,3 +1,17 @@
 main/App.class
 main/guiElements/Procesor.class
+main/App$1.class
+main/logic/RamUpdater.class
+main/guiElements/AOut.class
+main/App$1$1.class
+main/App$2.class
+main/guiElements/Inputs.class
+main/logic/Conector.class
+main/logic/SignalSimulator.class
+main/logic/NegativeFrequencyException.class
+main/App$3.class
+main/logic/Emz1001.class
 main/guiElements/SevenSegmentDisplay.class
+main/logic/Emz1001Instructions/InstructionSet.class
+main/App$2$1.class
+main/logic/Emz1001Instructions/Instruction.class

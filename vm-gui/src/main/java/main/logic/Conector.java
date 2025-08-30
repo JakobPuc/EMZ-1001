@@ -1,5 +1,9 @@
 package main.logic;
 
+import main.guiElements.Inputs;
+import main.guiElements.AOut;
+import main.guiElements.SevenSegmentDisplay;
+
 public class Conector {
 
 	private Emz1001 src;
@@ -12,6 +16,10 @@ public class Conector {
 	private boolean pinsD = false;
 	private boolean pinsI = false;
 	private boolean pinsK = false;
+	private boolean DDir;
+	private Inputs input;
+	private AOut out;
+	private SevenSegmentDisplay dis;
 
 	public Conector(Emz1001 src, boolean[] dest) {
 		if (src != null) {
@@ -22,12 +30,16 @@ public class Conector {
 		}
 	}
 
-	public Conector(Emz1001 src, boolean[] dest, String pins) {
+	public Conector(Emz1001 src, Inputs in, AOut out, SevenSegmentDisplay dis, String pins) {
 		if (src != null) {
 			this.src = src;
 		}
-		if (dest != null) {
-		}
+		if (in != null)
+			this.input = in;
+		if (out != null)
+			this.out = out;
+		if (dis != null)
+			this.dis = dis;
 
 		if (pins.contains("A"))
 			this.pinsA = true;
@@ -40,25 +52,27 @@ public class Conector {
 
 	}
 
+	// TODO i need to implement bidirectonal data travel on d pins
 	public void run() {
 		while (true) {
-
+			this.DDir = this.src.getDDir();
 			if (this.pinsA == true) {
-				this.destA = this.src.getPinsA();
+				this.out.setPins(this.src.getPinsA());
 			}
+
 			if (this.pinsD == true) {
 				if (this.inputD == true) {
-					this.destD = this.src.getPinsD();
+					this.dis.setPins(this.src.getPinsD());
 				} else {
 					this.src.setPinsD(destD);
 				}
 			}
 
 			if (this.pinsI == true) {
-				this.src.setPinsI(inpI);
+				this.src.setPinsI(this.input.getPinsI());
 			}
 			if (this.pinsK == true) {
-				this.src.setPinsK(inpK);
+				this.src.setPinsK(this.input.getPinsK());
 			}
 
 		}
@@ -73,4 +87,5 @@ public class Conector {
 			this.destD = D;
 		}
 	}
+
 }

@@ -1,3 +1,11 @@
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/Conector.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/Emz1001.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/App.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/guiElements/SevenSegmentDisplay.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/RamUpdater.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/Emz1001Instructions/Instruction.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/guiElements/Inputs.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/guiElements/AOut.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/Emz1001Instructions/InstructionSet.java
 /home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/guiElements/Procesor.java
+/home/jakob/Documents/git_igrisce/EMZ-1001/vm-gui/src/main/java/main/logic/SignalSimulator.java

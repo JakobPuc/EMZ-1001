@@ -7,10 +7,14 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+import main.logic.Emz1001;
+
 public class SevenSegmentDisplay extends Group {
 	private final Rectangle[] segments = new Rectangle[7];
 	private final Circle dot;
 	private final Rectangle background;
+	private boolean[] pinStates = new boolean[8];
+	private Emz1001 cpu;
 
 	private final boolean[][] digitSegments = {
 			{ true, true, true, true, true, true, false }, // 0
@@ -77,10 +81,19 @@ public class SevenSegmentDisplay extends Group {
 			pinDots[i].centerXProperty().bind(segments[0].xProperty().add((hLen + 40) * scale));
 			pinDots[i].centerYProperty().bind(segments[0].yProperty().add((i * 20) * scale));
 
+			int index = i; // required for lambda
+			pin.setOnMouseClicked(e -> {
+				if (this.cpu != null && this.cpu.getDDir()) {
+					pinStates[index] = !pinStates[index];
+					pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
+				}
+			});
+
 			this.getChildren().addAll(pin, label);
 		}
 
 		setDigit(-1);
+
 	}
 
 	private Rectangle createSegment(double x, double y, double width, double height) {
@@ -118,6 +131,16 @@ public class SevenSegmentDisplay extends Group {
 			dot.setVisible(pins[7]);
 			pinDots[7].setFill(pins[7] ? Color.LIMEGREEN : Color.DARKGRAY);
 		}
+	}
+
+	public void setCpu(Emz1001 cpu) {
+		if (cpu != null) {
+			this.cpu = cpu;
+		}
+	}
+
+	public boolean[] getPins() {
+		return this.pinStates;
 	}
 
 }

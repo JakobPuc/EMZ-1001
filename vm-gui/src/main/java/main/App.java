@@ -21,6 +21,7 @@ import main.guiElements.AOut;
 import main.logic.Emz1001;
 import main.logic.RamUpdater;
 import main.guiElements.Inputs;
+import main.logic.Conector;
 
 public class App extends Application {
 
@@ -30,6 +31,7 @@ public class App extends Application {
 	private SevenSegmentDisplay display;
 	private Procesor guiProcesor;
 	private Task<Void> procesorTask;
+	private Conector con;
 	// private Scene newRamPanScene;
 	// tmp
 	// private byte[][] RAM = new byte[4][16];
@@ -125,12 +127,15 @@ public class App extends Application {
 				Thread backgroundThread = new Thread(procesorTask);
 				backgroundThread.setDaemon(true); // allows app to exit when main window closes
 				backgroundThread.start();
+
 			}
 
 		});
 		AOut aOut = new AOut(500, 30, 5);
 
 		Inputs inp = new Inputs(200, 100, 10);
+
+		// con = new Conector(procesor, new boolean[10], "ADIK");
 		// for (int i = 0; i < inp.getPins().length; i++) {
 		// Circle[] b = inp.getPins();
 		// root.getChildren().add(b[i]);
@@ -139,6 +144,7 @@ public class App extends Application {
 		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
 
 		SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
+		display.setCpu(this.procesor);
 		root.getChildren().addAll(display, aOut);
 		/*
 		 * Procesor cpu = new Procesor();
