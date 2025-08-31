@@ -82,11 +82,17 @@ public class SevenSegmentDisplay extends Group {
 			pinDots[i].centerYProperty().bind(segments[0].yProperty().add((i * 20) * scale));
 
 			int index = i; // required for lambda
+			/*
+			 * pin.setOnMouseClicked(e -> {
+			 * if (this.cpu != null && this.cpu.getDDir()) {
+			 * pinStates[index] = !pinStates[index];
+			 * pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
+			 * }
+			 * });
+			 */
 			pin.setOnMouseClicked(e -> {
-				if (this.cpu != null && this.cpu.getDDir()) {
-					pinStates[index] = !pinStates[index];
-					pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
-				}
+				pinStates[index] = !pinStates[index];
+				pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
 			});
 
 			this.getChildren().addAll(pin, label);

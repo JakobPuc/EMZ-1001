@@ -517,6 +517,7 @@ public class Emz1001 {
 				this.stateOfDLines = this.stateOfDLines | this.ACC;
 				this.EXIT = true;
 				decodeDlines();
+				// System.out.println(java.util.Arrays.toString(getPinsD()));
 				break;
 			case 0x1B: // DISN
 				this.floatingModeOnDLines = false;
@@ -683,6 +684,12 @@ public class Emz1001 {
 				tmp = this.RAM[this.BU][this.BL];
 				this.RAM[this.BU][this.BL] = (byte) this.ACC;
 				this.ACC = tmp;
+				break;
+			case 0x38:
+				tmp = this.RAM[this.BU][this.BL];
+				this.RAM[this.BU][this.BL] = (byte) this.ACC;
+				this.ACC = tmp;
+				this.BU = (byte) ((this.BU ^ ~param) & 0x3);
 				break;
 			case 0x4C: // LBEP Y
 				this.BL = (byte) ((this.E + 1) & 0x0F);
