@@ -56,6 +56,7 @@ public class Conector {
 	public void run() {
 		while (true) {
 			this.DDir = this.src.getDDir();
+			this.dis.setDdir(this.DDir);
 			if (this.pinsA == true) {
 				this.out.setPins(this.src.getPinsA());
 			}

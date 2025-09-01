@@ -14,7 +14,8 @@ public class SevenSegmentDisplay extends Group {
 	private final Circle dot;
 	private final Rectangle background;
 	private boolean[] pinStates = new boolean[8];
-	private Emz1001 cpu;
+
+	private boolean inputD;
 
 	private final boolean[][] digitSegments = {
 			{ true, true, true, true, true, true, false }, // 0
@@ -82,18 +83,20 @@ public class SevenSegmentDisplay extends Group {
 			pinDots[i].centerYProperty().bind(segments[0].yProperty().add((i * 20) * scale));
 
 			int index = i; // required for lambda
+
+			pin.setOnMouseClicked(e -> {
+				if (this.inputD) {
+					pinStates[index] = !pinStates[index];
+					pin.setFill(pinStates[index] ? Color.DARKRED : Color.DARKGRAY);
+				}
+			});
+
 			/*
 			 * pin.setOnMouseClicked(e -> {
-			 * if (this.cpu != null && this.cpu.getDDir()) {
 			 * pinStates[index] = !pinStates[index];
 			 * pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
-			 * }
 			 * });
 			 */
-			pin.setOnMouseClicked(e -> {
-				pinStates[index] = !pinStates[index];
-				pin.setFill(pinStates[index] ? Color.LIMEGREEN : Color.DARKGRAY);
-			});
 
 			this.getChildren().addAll(pin, label);
 		}
@@ -139,10 +142,8 @@ public class SevenSegmentDisplay extends Group {
 		}
 	}
 
-	public void setCpu(Emz1001 cpu) {
-		if (cpu != null) {
-			this.cpu = cpu;
-		}
+	public void setDdir(boolean b) {
+		this.inputD = b;
 	}
 
 	public boolean[] getPins() {
