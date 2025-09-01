@@ -140,6 +140,7 @@ public class SevenSegmentDisplay extends Group {
 			dot.setVisible(pins[7]);
 			pinDots[7].setFill(pins[7] ? Color.LIMEGREEN : Color.DARKGRAY);
 		}
+		// this.pinStates = pins;
 	}
 
 	public void setDdir(boolean b) {

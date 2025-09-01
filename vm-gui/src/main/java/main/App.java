@@ -31,6 +31,9 @@ public class App extends Application {
 	private Procesor guiProcesor;
 	private Task<Void> procesorTask;
 	private Conector con;
+	private Task<Void> conectorTask;
+	private AOut aOut;
+	private Inputs inp;
 
 	@Override
 	public void start(Stage stage) {
@@ -49,14 +52,13 @@ public class App extends Application {
 		startSimulation.setLayoutX(180);
 		startSimulation.setOnAction(e -> startSimulationButtonFunction());
 
-		AOut aOut = new AOut(500, 30, 5);
-		Inputs inp = new Inputs(200, 100, 10);
+		aOut = new AOut(500, 30, 5);
+		inp = new Inputs(200, 100, 10);
 
 		root.getChildren().add(inp);
 		root.getChildren().addAll(openButton, openRamDebug, startSimulation, guiProcesor);
 
-		SevenSegmentDisplay display = new SevenSegmentDisplay(100, 100, 0.7);
-		display.setCpu(this.procesor);
+		this.display = new SevenSegmentDisplay(100, 100, 0.7);
 		root.getChildren().addAll(display, aOut);
 
 		Scene scene = new Scene(root, 720, 720);
@@ -128,9 +130,24 @@ public class App extends Application {
 
 	private void startSimulationButtonFunction() {
 		Thread backgroundThread = new Thread(procesorTask);
-		backgroundThread.setDaemon(true); // allows app to exit when main window closes
-		backgroundThread.start();
 
+		// init conector
+		Thread backgroundThreadConnector = new Thread(() -> {
+			while (this.procesor == null) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					return;
+				}
+			}
+			con = new Conector(this.procesor, this.inp, this.aOut, this.display, "ADKI");
+			con.run();
+		});
+
+		backgroundThread.setDaemon(true); // allows app to exit when main window closes
+		backgroundThreadConnector.setDaemon(true);
+		backgroundThread.start();
+		backgroundThreadConnector.start();
 	}
 
 	// this function inits the gui procesor
@@ -148,6 +165,18 @@ public class App extends Application {
 				return null;
 			}
 		};
+	}
+
+	private void initConector() {
+
+		this.conectorTask = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				con.run();
+				return null;
+			}
+		};
+
 	}
 
 }

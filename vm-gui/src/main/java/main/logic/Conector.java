@@ -55,6 +55,7 @@ public class Conector {
 	// TODO i need to implement bidirectonal data travel on d pins
 	public void run() {
 		while (true) {
+			System.out.println("aa");
 			this.DDir = this.src.getDDir();
 			this.dis.setDdir(this.DDir);
 			if (this.pinsA == true) {
@@ -62,10 +63,12 @@ public class Conector {
 			}
 
 			if (this.pinsD == true) {
-				if (this.inputD == true) {
+				if (this.inputD == !true) {
 					this.dis.setPins(this.src.getPinsD());
+					System.out.println("bb");
 				} else {
-					this.src.setPinsD(destD);
+					this.src.setPinsD(dis.getPins());
+					System.out.println("ŽŽ");
 				}
 			}
 
@@ -75,8 +78,8 @@ public class Conector {
 			if (this.pinsK == true) {
 				this.src.setPinsK(this.input.getPinsK());
 			}
-
 		}
+
 	}
 
 	public boolean[] getDestD() {
