@@ -1,10 +1,8 @@
 /**
  * @author Jakob Puc
  * 
- *A polished and corrected version of this.java not finished.
  *
- * */
-
+ */
 package main.logic;
 
 import java.io.DataInputStream;

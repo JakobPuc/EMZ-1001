@@ -1,5 +1,7 @@
 package main.guiElements;
 
+import java.util.Arrays;
+
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -67,6 +69,7 @@ public class Inputs extends Group {
 	}
 
 	public boolean[] getPinsI() {
+		// Arrays.toString(pinsI);
 		return pinsI;
 	}
 

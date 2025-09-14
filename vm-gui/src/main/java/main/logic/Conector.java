@@ -1,6 +1,9 @@
 package main.logic;
 
 import main.guiElements.Inputs;
+
+import java.util.Arrays;
+
 import main.guiElements.AOut;
 import main.guiElements.SevenSegmentDisplay;
 
@@ -55,7 +58,6 @@ public class Conector {
 	// TODO i need to implement bidirectonal data travel on d pins
 	public void run() {
 		while (true) {
-			// System.out.println("aa");
 			this.DDir = this.src.getDDir();
 			this.dis.setDdir(this.DDir);
 			if (this.pinsA == true) {
@@ -65,7 +67,7 @@ public class Conector {
 			if (this.pinsD == true) {
 				if (this.inputD == !true) {
 					this.dis.setPins(this.src.getPinsD());
-					// System.out.println("bb");
+					// System.out.println(Arrays.toString(this.src.getPinsD()));
 				} else {
 					this.src.setPinsD(dis.getPins());
 					// System.out.println("ŽŽ");
