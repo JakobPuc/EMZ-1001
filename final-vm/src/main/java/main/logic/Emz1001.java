@@ -225,7 +225,6 @@ public class Emz1001 {
 				}
 			}
 		}
-		dumpROM();
 	}
 
 	private int readCliForDebug(Scanner sc) {
@@ -589,7 +588,6 @@ public class Emz1001 {
 				}
 				this.stateOfDLines = this.lachOnDLines;
 				decodeDlines();
-				System.out.println(this.stateOfDLines);
 				break;
 			case 0x1C: // SZM B
 				tmp = this.RAM[this.BU][this.BL];
@@ -635,7 +633,6 @@ public class Emz1001 {
 			case 0x29: // SZI
 				tmp = this.selectedI;
 				boolean tmpFlagI = true;
-				System.out.println(Arrays.toString(this.inputI));
 				if ((tmp & 0b1000) == 8) {
 					// System.out.println("aa");
 					if (this.inputI[3] == true)
@@ -654,11 +651,9 @@ public class Emz1001 {
 				if ((tmp & 0b1) == 1) {
 					// System.out.println("aa");
 					if (this.inputI[0] == true) {
-						System.out.println("BB");
 						tmpFlagI = false;
 					}
 				}
-				System.out.println(tmpFlagI);
 				if (tmpFlagI) {
 					skip();
 				}
