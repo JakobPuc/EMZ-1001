@@ -107,6 +107,7 @@ public class Emz1001 {
 			System.out.println("Chek file configuration");
 			e.printStackTrace();
 		}
+		dumpROM();
 	}
 
 	// function reads up to the sizeOfRom limit if file is longer than it cuts it of

@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class Main {
 
 	// NOT SAFE
-	private static File file = new File("../emzasm/bin/neki.bin");
+	private static File file = new File("/home/jakob/Documents/git_igrisce/EMZ-1001/emzasm/bin/zaporedje.bin");
 	// private static File file = null;
 	private static Emz1001 procesor;
 

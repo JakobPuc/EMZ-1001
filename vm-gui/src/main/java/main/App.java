@@ -148,6 +148,9 @@ public class App extends Application {
 		backgroundThreadConnector.setDaemon(true);
 		backgroundThread.start();
 		backgroundThreadConnector.start();
+
+		guiProcesor.show();
+
 	}
 
 	// this function inits the gui procesor
