@@ -14,6 +14,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+
+import javax.print.DocFlavor.READER;
+
 import java.io.EOFException;
 import main.logic.Emz1001Instructions.*;
 
@@ -530,7 +533,7 @@ public class Emz1001 {
 				} else {
 					this.lachOnDLines = 0b0;
 				}
-				System.out.println(this.ACC);
+				// System.out.println(this.ACC);
 				switch (this.ACC) {
 					case 0:
 						this.lachOnDLines = this.lachOnDLines | 0b01111110;
@@ -795,4 +798,25 @@ public class Emz1001 {
 	public boolean getDDir() {
 		return this.floatingModeOnDLines;
 	}
+
+	public int getACC() {
+		return this.ACC;
+	}
+
+	public byte getBL() {
+		return this.BL;
+	}
+
+	public byte getBU() {
+		return this.BU;
+	}
+
+	public int getE() {
+		return this.E;
+	}
+
+	public int[] getROM() {
+		return this.ROM;
+	}
+
 }

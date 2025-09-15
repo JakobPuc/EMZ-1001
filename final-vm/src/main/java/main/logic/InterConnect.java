@@ -16,6 +16,7 @@ public class InterConnect {
 	private Emz1001 procesor;
 	private Procesor procesorGUI;
 	private Task procesorTask;
+	private Thread procesorThread;
 
 	private boolean[] pinsI = new boolean[4];
 	private boolean[] pinsK = new boolean[4];
@@ -33,18 +34,7 @@ public class InterConnect {
 		this.procesorGUI.setScaleY(0.5);
 		this.procesorGUI.setLayoutX(200);
 		this.procesorGUI.setLayoutY(200);
-
-		this.procesorTask = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-				procesor = new Emz1001(selectedFile);
-				procesor.run(false);
-				return null;
-			}
-		};
-
-		new Thread(this.procesorTask).start();
-
+		initProcesorTask(selectedFile);
 	}
 
 	// init for proseor
@@ -54,16 +44,23 @@ public class InterConnect {
 		this.procesorGUI.setScaleY(setScaleY);
 		this.procesorGUI.setLayoutX(setLayoutX);
 		this.procesorGUI.setLayoutY(setLayoutY);
+		initProcesorTask(selectedFile);
+	}
 
+	private void initProcesorTask(File selectedFile) {
 		this.procesorTask = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-				System.out.println("aaaaaaaaaaaaaaaaaa");
 				procesor = new Emz1001(selectedFile);
 				procesor.run(false);
 				return null;
 			}
 		};
+	}
+
+	public void startProcesorTask() {
+		this.procesorThread = new Thread(this.procesorTask);
+		this.procesorThread.start();
 	}
 
 	// set methods
@@ -79,6 +76,10 @@ public class InterConnect {
 
 	public Input getInput() {
 		return this.input;
+	}
+
+	public Emz1001 getEmz1001() {
+		return this.procesor;
 	}
 
 }

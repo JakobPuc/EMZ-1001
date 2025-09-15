@@ -5,7 +5,6 @@ main/gui/Input.class
 main/gui/Procesor.class
 main/gui/Input$1.class
 main/logic/Emz1001.class
-main/logic/InterConnect$2.class
 main/logic/InterConnect$1.class
 main/logic/Emz1001Instructions/InstructionSet.class
 main/logic/SignalSimulator.class

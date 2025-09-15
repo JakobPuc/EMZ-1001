@@ -24,10 +24,17 @@ public class App extends Application {
 	// GUI elements
 	Procesor procesor;
 	Button openFileButton;
+	Button startSimulationButton;
+	Button openDebugButton;
 	Input input;
 
 	// logic
 	InterConnect conector;
+
+	// de-bug related stuff
+	Scene deBugScene;
+	Pane deBugRoot;
+	Stage deBugWindow;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -38,7 +45,7 @@ public class App extends Application {
 
 		// show contents
 		// root.getChildren().add(this.procesor);
-		root.getChildren().add(this.openFileButton);
+		root.getChildren().addAll(this.openFileButton, this.startSimulationButton, this.openDebugButton);
 		Scene scene = new Scene(root, 1200, 600);
 
 		primaryStage.setScene(scene);
@@ -61,6 +68,14 @@ public class App extends Application {
 	private void initButtons(Stage stage, Pane pane) {
 		this.openFileButton = new Button("Open File");
 		this.openFileButton.setOnAction(e -> openFileButtonFunction(stage, pane));
+
+		this.startSimulationButton = new Button("Start");
+		this.startSimulationButton.setLayoutX(100);
+		this.startSimulationButton.setOnAction(e -> startSimulationButtonFunction());
+
+		this.openDebugButton = new Button("De-Bug");
+		this.openDebugButton.setLayoutX(200);
+		this.openDebugButton.setOnAction(e -> openDebugButtonFunction());
 	}
 
 	// TODO check file before opening it
@@ -86,5 +101,22 @@ public class App extends Application {
 			}
 		}
 
+	}
+
+	private void startSimulationButtonFunction() {
+		if (this.conector.getEmz1001() != null) {
+			this.conector.startProcesorTask();
+		}
+	}
+
+	// TODO implement logic so it can open only when stat is presed
+	private void openDebugButtonFunction() {
+		this.deBugWindow = new Stage();
+
+		this.deBugRoot = new Pane();
+		this.deBugScene = new Scene(this.deBugRoot, 400, 300);
+
+		this.deBugWindow.setScene(this.deBugScene);
+		this.deBugWindow.show();
 	}
 }
