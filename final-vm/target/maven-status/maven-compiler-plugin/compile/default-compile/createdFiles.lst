@@ -1,6 +1,7 @@
 main/logic/NegativeFrequencyException.class
 main/logic/InterConnect.class
 main/App.class
+main/gui/AOut.class
 main/gui/Input.class
 main/gui/Procesor.class
 main/gui/Input$1.class

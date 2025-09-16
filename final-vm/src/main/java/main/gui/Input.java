@@ -27,7 +27,7 @@ public class Input extends Group {
 			int index = (i < 4) ? i : i - 4;
 			String labelText = prefix + index;
 
-			int column = (i < 4) ? 0 : 1;
+			int column = (i < 4) ? 0 : 2;
 			int row = index;
 
 			double cx = x + column * (size * 6);

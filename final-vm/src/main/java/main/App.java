@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import main.gui.Procesor;
 import main.logic.InterConnect;
 import main.gui.Input;
+import main.gui.AOut;
 
 public class App extends Application {
 
@@ -27,6 +28,7 @@ public class App extends Application {
 	Button startSimulationButton;
 	Button openDebugButton;
 	Input input;
+	AOut aOut;
 
 	// logic
 	InterConnect conector;
@@ -89,8 +91,12 @@ public class App extends Application {
 			this.procesor = conector.getProcesorGUI();
 
 			// Init Input GUI
-			this.conector.setInput(100, 50, 5);
+			this.conector.initInput(100, 50, 5);
 			this.input = conector.getInput();
+
+			// Init aOut
+			this.conector.initAOut(300, 50, 5);
+			this.aOut = this.conector.getAOut();
 
 			// Add input GUI to the pane if not already added
 			if (!pane.getChildren().contains(this.input)) {
@@ -98,6 +104,9 @@ public class App extends Application {
 			}
 			if (!pane.getChildren().contains(this.procesor)) {
 				pane.getChildren().add(this.procesor);
+			}
+			if (!pane.getChildren().contains(this.aOut)) {
+				pane.getChildren().add(this.aOut);
 			}
 		}
 

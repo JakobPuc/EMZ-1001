@@ -9,6 +9,7 @@ import java.io.File;
 import javafx.concurrent.Task;
 import main.gui.Input;
 import main.gui.Procesor;
+import main.gui.AOut;
 
 public class InterConnect {
 
@@ -22,6 +23,7 @@ public class InterConnect {
 	private boolean[] pinsK = new boolean[4];
 
 	private Input input;
+	private AOut aOut;
 
 	public InterConnect() {
 		System.out.println("Class InterConnect created");
@@ -58,16 +60,25 @@ public class InterConnect {
 		};
 	}
 
+	public void initInput(int x, int y, int size) {
+		this.input = new Input(x, y, size);
+		this.input.setInterConnect(this);
+	}
+
+	public void initAOut(int x, int y, int size) {
+		this.aOut = new AOut(x, y, size);
+	}
+
 	public void startProcesorTask() {
 		this.procesorThread = new Thread(this.procesorTask);
 		this.procesorThread.start();
 	}
 
-	// set methods
-	public void setInput(int x, int y, int size) {
-		this.input = new Input(x, y, size);
-		this.input.setInterConnect(this);
+	public void updateFromProcesor() {
+
 	}
+
+	// set methods
 
 	// get methods
 	public Procesor getProcesorGUI() {
@@ -80,6 +91,10 @@ public class InterConnect {
 
 	public Emz1001 getEmz1001() {
 		return this.procesor;
+	}
+
+	public AOut getAOut() {
+		return this.aOut;
 	}
 
 }
