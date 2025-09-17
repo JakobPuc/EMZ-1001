@@ -221,7 +221,7 @@ public class Emz1001 {
 			// System.out.println("Entered a loop.");
 			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD);
 			if (next.getFlag()) {
-				System.out.println("zz");
+				// System.out.println("zz");
 				next.setFlag(false);
 				instruction = this.ROM[this.programCounter];
 				this.programCounter++;
@@ -240,7 +240,9 @@ public class Emz1001 {
 							instruction & this.instructions[indexOfInstruction].getMask());
 				}
 			}
-
+			// System.out.println(Arrays.toString(this.inputI));
+			// System.out.println(this.ACC);
+			// dumpRAM();
 		}
 	}
 

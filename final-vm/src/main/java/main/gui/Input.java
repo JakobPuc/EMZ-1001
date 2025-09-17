@@ -1,5 +1,6 @@
 package main.gui;
 
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
@@ -39,7 +40,8 @@ public class Input extends Group {
 			pin.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent e) {
-					handlePinClick(pinIndex, pin, labelText);
+					handlePinClick(pinIndex, pin);
+					// System.out.println("Klick");
 				}
 			});
 			Text text = new Text(labelText);
@@ -55,22 +57,20 @@ public class Input extends Group {
 		}
 	}
 
-	private void handlePinClick(int pinIndex, Circle pin, String labelText) {
-		System.out.println("Pin " + pinIndex + " clicked");
+	private void handlePinClick(int pinIndex, Circle pin) {
 		if (pinIndex < 4) { // pins I
 			this.pinsI[pinIndex] = !this.pinsI[pinIndex];
-			pin.setFill(this.pinsI[pinIndex] ? Color.RED : Color.BLACK);
 			if (this.connector != null) {
-
+				this.connector.setPinsI(this.pinsI);
 			}
+			pin.setFill(this.pinsI[pinIndex] ? Color.RED : Color.BLACK);
 		} else { // pins K
 			int kIndex = pinIndex - 4;
 			this.pinsK[kIndex] = !this.pinsK[kIndex];
-			pin.setFill(this.pinsK[kIndex] ? Color.RED : Color.BLACK);
 			if (this.connector != null) {
-
+				this.connector.setPinsK(this.pinsK);
 			}
-
+			pin.setFill(this.pinsK[kIndex] ? Color.RED : Color.BLACK);
 		}
 	}
 

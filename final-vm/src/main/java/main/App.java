@@ -63,27 +63,9 @@ public class App extends Application {
 		launch(args);
 	}
 
+	// TODO implement a better stoping method
 	@Override
 	public void stop() throws Exception {
-		// Stop Emz1001 thread
-		if (conector.getEmz1001() != null) {
-			conector.getEmz1001().stopSimulation();
-		}
-
-		// Stop SignalSimulator threads
-		if (conector.getEmz1001() != null) {
-			conector.getEmz1001().secondsTimer.kill();
-			conector.getEmz1001().next.kill();
-		}
-
-		// Stop processor thread
-		if (conector.procesorThread != null && conector.procesorThread.isAlive()) {
-			conector.procesorThread.interrupt();
-		}
-
-		System.out.println("All background tasks stopped.");
-
-		super.stop();
 		System.exit(0);
 	}
 

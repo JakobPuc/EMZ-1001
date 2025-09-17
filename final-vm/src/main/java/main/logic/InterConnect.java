@@ -87,23 +87,39 @@ public class InterConnect {
 		System.out.println("Procesor task started.");
 	}
 
+	// Add these fields
+	private long lastUpdateTime = 0;
+	private final long UPDATE_INTERVAL = 16; // ~60 FPS (16ms between updates)
+
+	// ... rest of your existing code ...
+
 	public void updateFromProcesor(boolean[] aOut, boolean dDir, boolean[] dOut) {
-		Platform.runLater(() -> {
-			this.aOut.setPins(aOut);
-			this.display.setDdir(dDir);
-			if (dDir) {
-				this.procesor.setPinsD(this.display.getPins());
-			} else {
-				this.display.setPins(dOut);
-			}
-		});
+		long currentTime = System.currentTimeMillis();
 
-		this.procesor.setPinsI(this.input.getPinsI());
-		this.procesor.setPinsK(this.input.getPinsK());
+		// Only update UI at most 60 times per second
+		if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
+			lastUpdateTime = currentTime;
 
-		System.out.println("A:" + Arrays.toString(aOut) + " D dir " + dDir + " dOut: " + Arrays.toString(dOut));
+			Platform.runLater(() -> {
+				this.aOut.setPins(aOut);
+				this.display.setDdir(dDir);
+				if (dDir) {
+					this.procesor.setPinsD(this.display.getPins());
+				} else {
+					this.display.setPins(dOut);
+				}
+			});
+		}
 	}
+
 	// set methods
+	public void setPinsI(boolean[] pins) {
+		this.procesor.setPinsI(pins);
+	}
+
+	public void setPinsK(boolean[] pins) {
+		this.procesor.setPinsK(pins);
+	}
 
 	// get methods
 	public Procesor getProcesorGUI() {
