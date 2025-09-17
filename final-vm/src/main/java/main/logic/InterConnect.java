@@ -5,11 +5,14 @@
 package main.logic;
 
 import java.io.File;
+import java.util.Arrays;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import main.gui.Input;
 import main.gui.Procesor;
 import main.gui.AOut;
+import main.gui.SevenSegmentDisplay;
 
 public class InterConnect {
 
@@ -18,6 +21,7 @@ public class InterConnect {
 	private Procesor procesorGUI;
 	private Task procesorTask;
 	private Thread procesorThread;
+	private SevenSegmentDisplay display;
 
 	private boolean[] pinsI = new boolean[4];
 	private boolean[] pinsK = new boolean[4];
@@ -50,10 +54,13 @@ public class InterConnect {
 	}
 
 	private void initProcesorTask(File selectedFile) {
+		System.out.println("Procesor task init.");
+		this.procesor = new Emz1001(selectedFile);
+		this.procesor.setInterConnect(this);
 		this.procesorTask = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-				procesor = new Emz1001(selectedFile);
+				System.out.println("procesor created");
 				procesor.run(false);
 				return null;
 			}
@@ -69,15 +76,33 @@ public class InterConnect {
 		this.aOut = new AOut(x, y, size);
 	}
 
+	public void initSevenSegmentDisplay(double x, double y, double scale) {
+		this.display = new SevenSegmentDisplay(x, y, scale);
+	}
+
 	public void startProcesorTask() {
 		this.procesorThread = new Thread(this.procesorTask);
+		this.procesorThread.setDaemon(true);
 		this.procesorThread.start();
+		System.out.println("Procesor task started.");
 	}
 
-	public void updateFromProcesor() {
+	public void updateFromProcesor(boolean[] aOut, boolean dDir, boolean[] dOut) {
+		Platform.runLater(() -> {
+			this.aOut.setPins(aOut);
+			this.display.setDdir(dDir);
+			if (dDir) {
+				this.procesor.setPinsD(this.display.getPins());
+			} else {
+				this.display.setPins(dOut);
+			}
+		});
 
+		this.procesor.setPinsI(this.input.getPinsI());
+		this.procesor.setPinsK(this.input.getPinsK());
+
+		System.out.println("A:" + Arrays.toString(aOut) + " D dir " + dDir + " dOut: " + Arrays.toString(dOut));
 	}
-
 	// set methods
 
 	// get methods
@@ -95,6 +120,10 @@ public class InterConnect {
 
 	public AOut getAOut() {
 		return this.aOut;
+	}
+
+	public SevenSegmentDisplay getSevenSegmentDisplay() {
+		return this.display;
 	}
 
 }

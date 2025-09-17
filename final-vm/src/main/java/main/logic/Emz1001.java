@@ -19,8 +19,11 @@ import javax.print.DocFlavor.READER;
 
 import java.io.EOFException;
 import main.logic.Emz1001Instructions.*;
+import main.logic.InterConnect;
 
 public class Emz1001 {
+
+	private InterConnect connect;
 
 	// RAM and RAM registers
 	private byte[][] RAM = new byte[4][16]; // each 4 bits
@@ -203,12 +206,22 @@ public class Emz1001 {
 	}
 
 	private void simulation() {
+		System.out.println("Entered simulation loop");
 		secondsTimer.start();
 		next.start();
+		System.out.println("Started timer.");
 		int instruction = 0;
 
+		if (this.connect == null) {
+			System.out.println("Connector is null");
+			return;
+		}
+
 		while (true) {
+			// System.out.println("Entered a loop.");
+			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD);
 			if (next.getFlag()) {
+				System.out.println("zz");
 				next.setFlag(false);
 				instruction = this.ROM[this.programCounter];
 				this.programCounter++;
@@ -227,6 +240,7 @@ public class Emz1001 {
 							instruction & this.instructions[indexOfInstruction].getMask());
 				}
 			}
+
 		}
 	}
 
@@ -817,6 +831,10 @@ public class Emz1001 {
 
 	public int[] getROM() {
 		return this.ROM;
+	}
+
+	public void setInterConnect(InterConnect connect) {
+		this.connect = connect;
 	}
 
 }

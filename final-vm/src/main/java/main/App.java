@@ -19,6 +19,7 @@ import main.gui.Procesor;
 import main.logic.InterConnect;
 import main.gui.Input;
 import main.gui.AOut;
+import main.gui.SevenSegmentDisplay;
 
 public class App extends Application {
 
@@ -29,6 +30,7 @@ public class App extends Application {
 	Button openDebugButton;
 	Input input;
 	AOut aOut;
+	SevenSegmentDisplay display;
 
 	// logic
 	InterConnect conector;
@@ -63,6 +65,25 @@ public class App extends Application {
 
 	@Override
 	public void stop() throws Exception {
+		// Stop Emz1001 thread
+		if (conector.getEmz1001() != null) {
+			conector.getEmz1001().stopSimulation();
+		}
+
+		// Stop SignalSimulator threads
+		if (conector.getEmz1001() != null) {
+			conector.getEmz1001().secondsTimer.kill();
+			conector.getEmz1001().next.kill();
+		}
+
+		// Stop processor thread
+		if (conector.procesorThread != null && conector.procesorThread.isAlive()) {
+			conector.procesorThread.interrupt();
+		}
+
+		System.out.println("All background tasks stopped.");
+
+		super.stop();
 		System.exit(0);
 	}
 
@@ -98,6 +119,10 @@ public class App extends Application {
 			this.conector.initAOut(300, 50, 5);
 			this.aOut = this.conector.getAOut();
 
+			// init Display
+			this.conector.initSevenSegmentDisplay(400, 50, 1);
+			this.display = this.conector.getSevenSegmentDisplay();
+
 			// Add input GUI to the pane if not already added
 			if (!pane.getChildren().contains(this.input)) {
 				pane.getChildren().add(this.input);
@@ -108,13 +133,19 @@ public class App extends Application {
 			if (!pane.getChildren().contains(this.aOut)) {
 				pane.getChildren().add(this.aOut);
 			}
+			if (!pane.getChildren().contains(this.display)) {
+				pane.getChildren().add(this.display);
+			}
 		}
 
 	}
 
 	private void startSimulationButtonFunction() {
+		System.out.println(this.conector.getEmz1001());
 		if (this.conector.getEmz1001() != null) {
+			System.out.println("BB");
 			this.conector.startProcesorTask();
+			// System.out.println("Does this work");
 		}
 	}
 

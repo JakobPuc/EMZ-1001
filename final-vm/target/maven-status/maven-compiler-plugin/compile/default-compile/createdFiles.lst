@@ -1,12 +1,13 @@
-main/logic/NegativeFrequencyException.class
 main/logic/InterConnect.class
 main/App.class
-main/gui/AOut.class
 main/gui/Input.class
-main/gui/Procesor.class
 main/gui/Input$1.class
+main/gui/SevenSegmentDisplay.class
+main/logic/SignalSimulator.class
+main/logic/NegativeFrequencyException.class
+main/gui/AOut.class
+main/gui/Procesor.class
 main/logic/Emz1001.class
 main/logic/InterConnect$1.class
 main/logic/Emz1001Instructions/InstructionSet.class
-main/logic/SignalSimulator.class
 main/logic/Emz1001Instructions/Instruction.class
