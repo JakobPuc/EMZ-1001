@@ -301,15 +301,15 @@ public class Emz1001 {
 
 	private void decodeDlines() {
 		int tmp = this.stateOfDLines;
-		for (int i = 0; i < 8; i++) {
-			// this.pinsD[i] = ((tmp &1) == 1);
-			if ((tmp & 1) == 1) {
-				this.pinsD[i] = true;
-			} else {
-				this.pinsD[i] = false;
-			}
-			tmp = tmp >> 1;
-		}
+		// Map bits correctly: bit 0 = G, bit 1 = F, bit 2 = E, etc.
+		this.pinsD[6] = (tmp & 0b00000001) != 0; // G - bit 0
+		this.pinsD[5] = (tmp & 0b00000010) != 0; // F - bit 1
+		this.pinsD[4] = (tmp & 0b00000100) != 0; // E - bit 2
+		this.pinsD[3] = (tmp & 0b00001000) != 0; // D - bit 3
+		this.pinsD[2] = (tmp & 0b00010000) != 0; // C - bit 4
+		this.pinsD[1] = (tmp & 0b00100000) != 0; // B - bit 5
+		this.pinsD[0] = (tmp & 0b01000000) != 0; // A - bit 6
+		this.pinsD[7] = (tmp & 0b10000000) != 0; // DP - bit 7
 	}
 
 	private void decodeAlines() {
@@ -438,9 +438,9 @@ public class Emz1001 {
 				break;
 			case 0x0F: // EUR
 				if ((this.ACC & 1) == 1) {
-					this.invertedPolarityOnDLines = true;
-				} else {
 					this.invertedPolarityOnDLines = false;
+				} else {
+					this.invertedPolarityOnDLines = true;
 				}
 				// need to add a timer for seconds flag
 				if (((this.ACC >> 2) & 1) == 1) {
@@ -523,55 +523,55 @@ public class Emz1001 {
 				} else {
 					this.lachOnDLines = 0b0;
 				}
-				// System.out.println(this.ACC);
+
 				switch (this.ACC) {
 					case 0:
-						this.lachOnDLines = this.lachOnDLines | 0b01111110;
+						this.lachOnDLines = this.lachOnDLines | 0b01111110; // A,B,C,D,E,F
 						break;
 					case 1:
-						this.lachOnDLines = this.lachOnDLines | 0b00110000;
+						this.lachOnDLines = this.lachOnDLines | 0b00110000; // B,C on
 						break;
 					case 2:
-						this.lachOnDLines = this.lachOnDLines | 0b01101101;
+						this.lachOnDLines = this.lachOnDLines | 0b01101101; // A,B,D,E,G on
 						break;
 					case 3:
-						this.lachOnDLines = this.lachOnDLines | 0b01111001;
+						this.lachOnDLines = this.lachOnDLines | 0b01111001; // A,B,C,D,G on
 						break;
 					case 4:
-						this.lachOnDLines = this.lachOnDLines | 0b00110011;
+						this.lachOnDLines = this.lachOnDLines | 0b00110011; // B,C,F,G on
 						break;
 					case 5:
-						this.lachOnDLines = this.lachOnDLines | 0b01011011;
+						this.lachOnDLines = this.lachOnDLines | 0b01011011; // A,C,D,F,G on
 						break;
 					case 6:
-						this.lachOnDLines = this.lachOnDLines | 0b01011111;
+						this.lachOnDLines = this.lachOnDLines | 0b01011111; // A,C,D,E,F,G on
 						break;
 					case 7:
-						this.lachOnDLines = this.lachOnDLines | 0b01110000;
+						this.lachOnDLines = this.lachOnDLines | 0b01110000; // A,B,C on
 						break;
 					case 8:
-						this.lachOnDLines = this.lachOnDLines | 0b01111111;
+						this.lachOnDLines = this.lachOnDLines | 0b01111111; // All segments on
 						break;
 					case 9:
-						this.lachOnDLines = this.lachOnDLines | 0b01111011;
+						this.lachOnDLines = this.lachOnDLines | 0b01111011; // A,B,C,D,F,G on
 						break;
-					case 10:
-						this.lachOnDLines = this.lachOnDLines | 0b01110111;
+					case 10: // A
+						this.lachOnDLines = this.lachOnDLines | 0b01110111; // A,B,C,E,F,G on
 						break;
-					case 11:
-						this.lachOnDLines = this.lachOnDLines | 0b00011111;
+					case 11: // b
+						this.lachOnDLines = this.lachOnDLines | 0b00011111; // C,D,E,F,G on
 						break;
-					case 12:
-						this.lachOnDLines = this.lachOnDLines | 0b01001110;
+					case 12: // C
+						this.lachOnDLines = this.lachOnDLines | 0b01001110; // A,D,E,F on
 						break;
-					case 13:
-						this.lachOnDLines = this.lachOnDLines | 0b00111101;
+					case 13: // d
+						this.lachOnDLines = this.lachOnDLines | 0b00111101; // B,C,D,E,G on
 						break;
-					case 14:
-						this.lachOnDLines = this.lachOnDLines | 0b01001111;
+					case 14: // E
+						this.lachOnDLines = this.lachOnDLines | 0b01001111; // A,D,E,F,G on
 						break;
-					case 15:
-						this.lachOnDLines = this.lachOnDLines | 0b01000111;
+					case 15: // F
+						this.lachOnDLines = this.lachOnDLines | 0b01000111; // A,E,F,G on
 						break;
 					default:
 						break;
@@ -691,7 +691,7 @@ public class Emz1001 {
 				this.RAM[this.BU][this.BL] = (byte) this.ACC;
 				this.ACC = tmp;
 				break;
-			case 0x38:
+			case 0x38: // XC
 				tmp = this.RAM[this.BU][this.BL];
 				this.RAM[this.BU][this.BL] = (byte) this.ACC;
 				this.ACC = tmp;
