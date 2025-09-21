@@ -11,6 +11,8 @@ import java.io.File;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -31,6 +33,10 @@ public class App extends Application {
 	Input input;
 	AOut aOut;
 	SevenSegmentDisplay display;
+	ToggleButton modeOfDebug;
+	boolean isToggleLocked;
+	boolean runDebug;
+	Label debugModeLabel;
 
 	// logic
 	InterConnect conector;
@@ -40,16 +46,30 @@ public class App extends Application {
 	Pane deBugRoot;
 	Stage deBugWindow;
 
+	boolean openDeBugWindow;
+
 	@Override
 	public void start(Stage primaryStage) {
+		this.openDeBugWindow = false;
+		this.isToggleLocked = false;
+		this.runDebug = false;
+
 		Pane root = new Pane();
 		this.conector = new InterConnect();
 
 		initButtons(primaryStage, root);
 
+		// Add the label
+		this.debugModeLabel = new Label("Debug Mode: OFF");
+		this.debugModeLabel.setLayoutX(420); // Position it next to the toggle button
+		this.debugModeLabel.setLayoutY(4); // Align with the button
+		this.debugModeLabel.setStyle("-fx-font-weight: bold;");
+		updateDebugModeLabel();
+
 		// show contents
 		// root.getChildren().add(this.procesor);
-		root.getChildren().addAll(this.openFileButton, this.startSimulationButton, this.openDebugButton);
+		root.getChildren().addAll(this.openFileButton, this.startSimulationButton, this.openDebugButton,
+				this.modeOfDebug, this.debugModeLabel);
 		Scene scene = new Scene(root, 1200, 600);
 
 		primaryStage.setScene(scene);
@@ -81,6 +101,11 @@ public class App extends Application {
 		this.openDebugButton = new Button("De-Bug");
 		this.openDebugButton.setLayoutX(200);
 		this.openDebugButton.setOnAction(e -> openDebugButtonFunction());
+
+		this.modeOfDebug = new ToggleButton("Mode of debug");
+		this.modeOfDebug.setLayoutX(300);
+		this.modeOfDebug.setOnAction(e -> setDebugMode());
+
 	}
 
 	// TODO check file before opening it
@@ -123,22 +148,62 @@ public class App extends Application {
 	}
 
 	private void startSimulationButtonFunction() {
+		this.isToggleLocked = true;
+		updateDebugModeLabel();
+		// System.out.println(this.runDebug);
 		System.out.println(this.conector.getEmz1001());
 		if (this.conector.getEmz1001() != null) {
-			System.out.println("BB");
-			this.conector.startProcesorTask();
+			this.conector.startProcesorTask(this.runDebug);
 			// System.out.println("Does this work");
+			if (this.openDeBugWindow == true) {
+				openDebugFunction();
+			}
 		}
 	}
 
 	// TODO implement logic so it can open only when stat is presed
 	private void openDebugButtonFunction() {
-		this.deBugWindow = new Stage();
+		this.openDeBugWindow = true;
+		if ((this.conector.getEmz1001() != null) && (this.deBugScene == null)
+				&& (this.conector.getProcesorRunning())) {
+			openDebugFunction();
+		}
+	}
 
+	private void openDebugFunction() {
+		this.deBugWindow = new Stage();
 		this.deBugRoot = new Pane();
 		this.deBugScene = new Scene(this.deBugRoot, 400, 300);
 
+		this.conector.initDebugWindow(deBugWindow, deBugRoot, deBugScene);
+
 		this.deBugWindow.setScene(this.deBugScene);
-		this.deBugWindow.show();
+		this.deBugWindow.setAlwaysOnTop(true);
+		// this.deBugWindow.show();
+
+	}
+
+	private void setDebugMode() {
+		if (this.isToggleLocked) {
+			this.modeOfDebug.setSelected(this.runDebug);
+		} else {
+			// this.isToggleLocked = true;
+			this.runDebug = this.modeOfDebug.isSelected();
+			updateDebugModeLabel();
+		}
+		System.out.println(runDebug);
+	}
+
+	private void updateDebugModeLabel() {
+		String status = this.modeOfDebug.isSelected() ? "ON" : "OFF";
+		String lockStatus = this.isToggleLocked ? " (LOCKED)" : "";
+		this.debugModeLabel.setText("Debug Mode: " + status + lockStatus);
+
+		// Optional: Change color based on state
+		if (this.modeOfDebug.isSelected()) {
+			this.debugModeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: green;");
+		} else {
+			this.debugModeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: red;");
+		}
 	}
 }

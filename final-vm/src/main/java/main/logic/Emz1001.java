@@ -194,7 +194,6 @@ public class Emz1001 {
 
 	public void run(boolean debug) {
 		try {
-
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
@@ -240,88 +239,63 @@ public class Emz1001 {
 							instruction & this.instructions[indexOfInstruction].getMask());
 				}
 			}
+
 			// System.out.println(Arrays.toString(this.inputI));
 			// System.out.println(this.ACC);
 			// dumpRAM();
 		}
 	}
 
-	private int readCliForDebug(Scanner sc) {
-		System.out.print("Enter a positive number or press Enter for default (1): ");
-		String str = new String();
-		while (true) {
-			if (sc.hasNextLine()) {
-				str = sc.nextLine();
-				if (str.equals("exit")) {
-					System.exit(1);
-				}
-				if (str.isEmpty()) {
-					// User just pressed Enter
-					return 1;
-				}
+	private long executeTo = 0;
 
-				try {
-					int tmp = Integer.parseInt(str);
-					if (tmp > 0) {
-						return tmp;
-					} else {
-						System.out.println("Please enter a positive number.");
-					}
-				} catch (NumberFormatException e) {
-					System.out.println("Enter a valid number.");
-				}
-			}
-			// update the state of pins
-		}
+	public void setExecuteTo(long value) {
+		this.executeTo = value;
 	}
 
 	private void simulationDebug() {
-		Scanner sc = new Scanner(System.in);
-		int executeTo = 0;
+		System.out.println("Entered debug simulation loop");
 		secondsTimer.start();
-		next.start();
+
+		if (this.connect == null) {
+			System.out.println("Connector is null");
+			return;
+		}
 
 		int instruction = 0;
 		while (true) {
-			executeTo = readCliForDebug(sc);
-			while (executeTo > 0) {
+			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD);
+			if (executeTo > 0) {
 				executeTo--;
-				if (next.getFlag()) {
-					next.setFlag(false);
-					instruction = this.ROM[this.programCounter];
-					this.programCounter++;
-					if (this.programCounter >= this.sizeOfRom) {
-						break;
-					}
-					int indexOfInstruction = returnIndexOfInstruction(instruction,
-							this.instructions);
-					if (indexOfInstruction == -1) {
-						System.out.println("ERROR: Instruction does not exist");
-						break;
-					}
-					if (this.instructions[indexOfInstruction].getMask() == 0x00) {
-						executeInstruction(this.instructions[indexOfInstruction].getOpCode(),
-								0);
-					} else {
-						executeInstruction(this.instructions[indexOfInstruction].getOpCode(),
-								instruction & this.instructions[indexOfInstruction]
-										.getMask());
-					}
+				// System.out.println("aa");
+				// if (next.getFlag()) {
+				// next.setFlag(false);
+				instruction = this.ROM[this.programCounter];
+				this.programCounter++;
+				if (this.programCounter >= this.sizeOfRom) {
+					break;
 				}
-				System.out.println(
-						String.format("0x%04X", this.programCounter) + " : "
-								+ String.format("%8s",
-										Integer.toBinaryString(
-												this.ROM[this.programCounter]))
-										.replace(' ', '0'));
+				int indexOfInstruction = returnIndexOfInstruction(instruction,
+						this.instructions);
+				if (indexOfInstruction == -1) {
+					System.out.println("ERROR: Instruction does not exist");
+					break;
+				}
+				if (this.instructions[indexOfInstruction].getMask() == 0x00) {
+					executeInstruction(this.instructions[indexOfInstruction].getOpCode(),
+							0);
+				} else {
+					executeInstruction(this.instructions[indexOfInstruction].getOpCode(),
+							instruction & this.instructions[indexOfInstruction]
+									.getMask());
+				}
 			}
+			// }
 
 			if (this.programCounter >= this.sizeOfRom) {
 				break;
 			}
 		}
 		dumpROM();
-		sc.close();
 
 	}
 
@@ -837,6 +811,78 @@ public class Emz1001 {
 
 	public void setInterConnect(InterConnect connect) {
 		this.connect = connect;
+	}
+
+	public int getProgramCounter() {
+		return this.programCounter;
+	}
+
+	public int getStackPointer() {
+		return this.stackPointer;
+	}
+
+	public int[] getStack() {
+		return this.stack;
+	}
+
+	public boolean getCarry() {
+		return this.carry;
+	}
+
+	public boolean getFlag1() {
+		return this.flag1;
+	}
+
+	public boolean getFlag2() {
+		return this.flag2;
+	}
+
+	public boolean getPPFlag() {
+		return this.PPFlag;
+	}
+
+	public boolean getSecondsFlag() {
+		return this.secondsFlag;
+	}
+
+	public boolean getFloatingModeOnDLines() {
+		return this.floatingModeOnDLines;
+	}
+
+	public boolean getInvertedPolarityOnDLines() {
+		return this.invertedPolarityOnDLines;
+	}
+
+	public int getSelectedK() {
+		return this.selectedK;
+	}
+
+	public int getSelectedI() {
+		return this.selectedI;
+	}
+
+	public int getStateOfDLines() {
+		return this.stateOfDLines;
+	}
+
+	public int getStateOfALines() {
+		return this.stateOfALines;
+	}
+
+	public int getLachOnDLines() {
+		return this.lachOnDLines;
+	}
+
+	public int getLachInALines() {
+		return this.lachInALines;
+	}
+
+	public int getPPR() {
+		return this.PPR;
+	}
+
+	public int getPBR() {
+		return this.PBR;
 	}
 
 }
