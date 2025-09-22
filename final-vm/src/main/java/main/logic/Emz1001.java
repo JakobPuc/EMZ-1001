@@ -254,6 +254,7 @@ public class Emz1001 {
 
 	private void simulationDebug() {
 		System.out.println("Entered debug simulation loop");
+		// dumpROM();
 		secondsTimer.start();
 
 		if (this.connect == null) {
@@ -318,7 +319,7 @@ public class Emz1001 {
 			if ((tmp & 1) == 1) {
 				this.pinsA[i] = true;
 			} else {
-				this.pinsA[i] = true;
+				this.pinsA[i] = false;
 			}
 			tmp = tmp >> 1;
 		}
@@ -332,11 +333,11 @@ public class Emz1001 {
 		int tmp = 0;
 		this.previousPPFlag = this.PPFlag;
 		switch (opcode) {
-			case 0x01: // NOP
+			case 0x00: // NOP
 				break;
-			case 0x02: // BRK not implemented treated as NOP
+			case 0x01: // BRK not implemented treated as NOP
 				break;
-			case 0x03: // RT
+			case 0x02: // RT
 				this.stackPointer--;
 				if (this.stackPointer < 0) {
 					this.stackPointer = this.sizeOfStack - 1;
@@ -345,7 +346,7 @@ public class Emz1001 {
 				tmp = tmp | (this.stack[this.stackPointer] & 0b1111111111);
 				this.programCounter = tmp;
 				break;
-			case 0x04: // RTS
+			case 0x03: // RTS
 				this.stackPointer--;
 				if (this.stackPointer < 0) {
 					this.stackPointer = this.sizeOfStack - 1;
@@ -355,11 +356,11 @@ public class Emz1001 {
 				this.programCounter = tmp;
 				skip();
 				break;
-			case 0x05: // PSH does somthing with IOException
+			case 0x04: // PSH
 				if ((this.BL <= 12) && (this.BL >= 0)) {
 					tmp = 1;
 					tmp = tmp << this.BL;
-					this.lachOnDLines = this.lachOnDLines | tmp;
+					this.lachInALines = this.lachInALines | tmp;
 					break;
 				}
 				if (this.BL == 13) {
@@ -371,16 +372,17 @@ public class Emz1001 {
 					break;
 				}
 				if (this.BL == 15) {
-					this.lachOnDLines = 0b1111111111111;
+					this.lachInALines = 0b1111111111111;
 					break;
 				}
+
 				break;
-			case 0x06: // PSL does somthing with IO
+			case 0x05: // PSL
 				if ((this.BL >= 0) && (this.BL <= 12)) {
 					tmp = 1;
 					tmp = tmp << this.BL;
 					tmp = ~tmp;
-					this.lachOnDLines = this.lachOnDLines | tmp;
+					this.lachInALines = this.lachInALines | tmp;
 					break;
 				}
 				if (this.BL == 13) {
@@ -392,24 +394,29 @@ public class Emz1001 {
 					break;
 				}
 				if (this.BL == 15) {
-					this.lachOnDLines = 0b0;
+					this.lachInALines = 0b0;
 					break;
 				}
-				break;
-			case 0x07: // AND
+			case 0x06: // AND
 				this.ACC = this.RAM[this.BU][this.BL] & this.ACC;
 				break;
-			case 0x08: // SOS
+			case 0x07: // SOS
 				if (this.secondsFlag == true) {
 					this.secondsTimer.setFlag(false);
 					this.secondsFlag = false;
 					skip();
 				}
 				break;
-			case 0x09: // SBE
+			case 0x08: // SBE
 				if (this.BL == this.E) {
 					skip();
 				}
+				break;
+			case 0x09: // SZC
+				if (this.carry == false) {
+					skip();
+				}
+
 				break;
 			case 0x0A: // STC
 				this.carry = true;
@@ -427,7 +434,8 @@ public class Emz1001 {
 				break;
 			case 0x0E: // INP does somthing with IO
 				if (this.floatingModeOnDLines == true) {
-					// TODO inputs data from Dlines to ACC and RAM
+					this.ACC = this.stateOfDLines & 0b1111;
+					this.RAM[this.BU][this.BL] = (byte) ((this.stateOfDLines >> 4) & 0b1111);
 				} else {
 					// inputs data from lach to ACC and RAM
 					tmp = this.lachOnDLines;
@@ -707,6 +715,7 @@ public class Emz1001 {
 					skip();
 				}
 				this.ACC = (byte) (this.ACC & 0b1111);
+
 				break;
 			case 0x60: // PP X*
 				if (this.previousPPFlag == false) {
@@ -749,6 +758,7 @@ public class Emz1001 {
 					tmp = tmp | param;
 					this.programCounter = tmp;
 				}
+
 				break;
 			default:
 				break;
@@ -766,6 +776,7 @@ public class Emz1001 {
 
 	public void setPinsD(boolean[] D) {
 		this.pinsD = D;
+		// System.out.println("Did it work?" + Arrays.toString(D));
 	}
 
 	public boolean[] getPinsI() {
