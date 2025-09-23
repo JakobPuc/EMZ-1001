@@ -1,6 +1,6 @@
 package main.logic;
 
-public class SignalSimulator extends Thread implements Runnable {
+public class SignalSimulator extends Thread {
 	private int freqrency = 60; // or 50 for 50Hz
 	private double sleep = 1000 / freqrency;
 	private long milis = (long) (sleep);

@@ -436,5 +436,4 @@ public class InterConnect {
 	public boolean getProcesorRunning() {
 		return this.procesorRunning;
 	}
-
 }

@@ -13,13 +13,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
-
-import javax.print.DocFlavor.READER;
 
 import java.io.EOFException;
 import main.logic.Emz1001Instructions.*;
-import main.logic.InterConnect;
 
 public class Emz1001 {
 
@@ -325,6 +321,32 @@ public class Emz1001 {
 		}
 	}
 
+	private void encodeDLines() {
+		int tmp = 0;
+		if (this.pinsD[6])
+			tmp |= (1 << 0); // G - bit 0
+		if (this.pinsD[5])
+			tmp |= (1 << 1); // F - bit 1
+		if (this.pinsD[4])
+			tmp |= (1 << 2); // E - bit 2
+		if (this.pinsD[3])
+			tmp |= (1 << 3); // D - bit 3
+		if (this.pinsD[2])
+			tmp |= (1 << 4); // C - bit 4
+		if (this.pinsD[1])
+			tmp |= (1 << 5); // B - bit 5
+		if (this.pinsD[0])
+			tmp |= (1 << 6); // A - bit 6
+		if (this.pinsD[7])
+			tmp |= (1 << 7); // DP - bit 7
+		this.stateOfDLines = tmp;
+	}
+
+	private boolean previosBL = false;
+	private boolean currentBL = false;
+	private boolean previosLAI = false;
+	private boolean currentLAI = false;
+
 	// may be changed to public
 	// this method that executes instructions
 	private void executeInstruction(int opcode, int param) {
@@ -436,6 +458,7 @@ public class Emz1001 {
 				if (this.floatingModeOnDLines == true) {
 					this.ACC = this.stateOfDLines & 0b1111;
 					this.RAM[this.BU][this.BL] = (byte) ((this.stateOfDLines >> 4) & 0b1111);
+					System.out.println(Integer.toBinaryString(this.stateOfDLines));
 				} else {
 					// inputs data from lach to ACC and RAM
 					tmp = this.lachOnDLines;
@@ -705,9 +728,42 @@ public class Emz1001 {
 				this.ACC = tmp;
 				this.BU = (byte) ((this.BU ^ ~param) & 0x3);
 				break;
+			case 0x40: // LBZ
+				if (this.previosBL) {
+					this.currentBL = false;
+				} else {
+					this.BL = 0;
+					this.BU = (byte) param;
+					this.currentBL = true;
+				}
+
+				break;
+			case 0x44: // LBF
+				if (this.previosBL) {
+					this.currentBL = false;
+				} else {
+					this.BL = 0xF;
+					this.BU = (byte) param;
+					this.currentBL = true;
+				}
+				break;
+			case 0x48: // LBE
+				if (this.previosBL) {
+					this.currentBL = false;
+				} else {
+					this.BL = (byte) this.E;
+					this.BU = (byte) param;
+					this.currentBL = true;
+				}
+				break;
 			case 0x4C: // LBEP Y
-				this.BL = (byte) ((this.E + 1) & 0x0F);
-				this.BU = (byte) param;
+				if (this.previosBL) {
+					this.currentBL = false;
+				} else {
+					this.BL = (byte) ((this.E + 1) & 0x0F);
+					this.BU = (byte) param;
+					this.currentBL = true;
+				}
 				break;
 			case 0x50: // ADIS
 				this.ACC = (byte) (this.ACC + param);
@@ -726,9 +782,15 @@ public class Emz1001 {
 				this.PPFlag = true;
 				break;
 			case 0x70: // LAI X
-				this.ACC = (byte) param;
-				this.selectedK = (byte) param;
-				this.selectedI = (byte) param;
+				if (this.previosLAI) {
+					this.currentLAI = false;
+				} else {
+					this.ACC = (byte) param;
+					this.selectedK = (byte) param;
+					this.selectedI = (byte) param;
+					this.currentLAI = true;
+				}
+
 				break;
 			case 0x80: // JMS X
 				if (previousPPFlag == true) {
@@ -763,6 +825,11 @@ public class Emz1001 {
 			default:
 				break;
 		}
+		this.previosLAI = this.currentLAI;
+		this.previosBL = this.currentBL;
+
+		this.currentBL = false;
+		this.currentLAI = false;
 
 	}
 
@@ -776,6 +843,7 @@ public class Emz1001 {
 
 	public void setPinsD(boolean[] D) {
 		this.pinsD = D;
+		encodeDLines();
 		// System.out.println("Did it work?" + Arrays.toString(D));
 	}
 
