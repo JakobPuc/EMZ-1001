@@ -23,6 +23,7 @@ import main.gui.Input;
 import main.gui.Procesor;
 import main.gui.AOut;
 import main.gui.SevenSegmentDisplay;
+import main.gui.Exit;
 
 public class InterConnect {
 
@@ -38,6 +39,8 @@ public class InterConnect {
 
 	private Input input;
 	private AOut aOut;
+
+	private Exit exit;
 
 	private boolean procesorRunning = false;
 	private boolean deBugStarted = false;
@@ -310,6 +313,14 @@ public class InterConnect {
 
 	}
 
+	public void initExit(double x, double y, int size) {
+		this.exit = new Exit(x, y, size);
+	}
+
+	public Exit getExit() {
+		return this.exit;
+	}
+
 	public void startProcesorTask(boolean run) {
 		initProcesorTask(run);
 		this.procesorThread = new Thread(this.procesorTask);
@@ -325,7 +336,7 @@ public class InterConnect {
 
 	// ... rest of your existing code ...
 
-	public void updateFromProcesor(boolean[] aOut, boolean dDir, boolean[] dOut) {
+	public void updateFromProcesor(boolean[] aOut, boolean dDir, boolean[] dOut, boolean exit) {
 		long currentTime = System.currentTimeMillis();
 
 		// Only update UI at most 60 times per second
@@ -345,6 +356,7 @@ public class InterConnect {
 					updateTextAreaRam();
 					updateDebugLabels();
 				}
+				this.exit.setStatus(exit);
 			});
 
 		}

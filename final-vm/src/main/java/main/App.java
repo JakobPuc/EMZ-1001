@@ -22,6 +22,7 @@ import main.logic.InterConnect;
 import main.gui.Input;
 import main.gui.AOut;
 import main.gui.SevenSegmentDisplay;
+import main.gui.Exit;
 
 public class App extends Application {
 
@@ -37,6 +38,7 @@ public class App extends Application {
 	boolean isToggleLocked;
 	boolean runDebug;
 	Label debugModeLabel;
+	Exit exit;
 
 	// logic
 	InterConnect conector;
@@ -130,6 +132,12 @@ public class App extends Application {
 			this.conector.initSevenSegmentDisplay(400, 50, 1);
 			this.display = this.conector.getSevenSegmentDisplay();
 
+			this.conector.initExit(250, 50, 5);
+			this.exit = this.conector.getExit();
+
+			// init exit
+			// this
+
 			// Add input GUI to the pane if not already added
 			if (!pane.getChildren().contains(this.input)) {
 				pane.getChildren().add(this.input);
@@ -142,6 +150,9 @@ public class App extends Application {
 			}
 			if (!pane.getChildren().contains(this.display)) {
 				pane.getChildren().add(this.display);
+			}
+			if (!pane.getChildren().contains(this.exit)) {
+				pane.getChildren().add(this.exit);
 			}
 		}
 

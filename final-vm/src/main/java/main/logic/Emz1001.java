@@ -214,7 +214,7 @@ public class Emz1001 {
 
 		while (true) {
 			// System.out.println("Entered a loop.");
-			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD);
+			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD, EXIT);
 			if (next.getFlag()) {
 				// System.out.println("zz");
 				next.setFlag(false);
@@ -260,7 +260,7 @@ public class Emz1001 {
 
 		int instruction = 0;
 		while (true) {
-			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD);
+			this.connect.updateFromProcesor(pinsA, floatingModeOnDLines, pinsD, EXIT);
 			if (executeTo > 0) {
 				executeTo--;
 				// System.out.println("aa");

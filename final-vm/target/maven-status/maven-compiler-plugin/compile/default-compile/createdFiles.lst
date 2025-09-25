@@ -3,6 +3,7 @@ main/App.class
 main/gui/Input.class
 main/gui/Input$1.class
 main/gui/SevenSegmentDisplay.class
+main/gui/Exit.class
 main/logic/SignalSimulator.class
 main/logic/NegativeFrequencyException.class
 main/gui/AOut.class
